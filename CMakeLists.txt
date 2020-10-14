@@ -1,5 +1,19 @@
+# Macros
+macro(add_post_build_steps libraryPath)
+    if (WIN32 AND CMAKE_SYSTEM_VERSION)
+     add_custom_command(TARGET sakura POST_BUILD
+     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+         ${libraryPath}/SDL2.dll
+         $<TARGET_FILE_DIR:sakura>/SDL2.dll)
+    endif()
+endmacro()
+
+# Project setup
 cmake_minimum_required(VERSION 3.6)
 project(sakura)
+
+# CMake config
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 # C++ version
 set(CMAKE_CXX_STANDARD 17)
@@ -13,14 +27,16 @@ add_executable(sakura
 
 # Platform Variables
 set(SDL2_ENABLED true CACHE BOOL "Use SDL2 as the System implementation")
-set(SDL2_INCLUDE_DIRS "" CACHE FILEPATH "SDL2 Headers")
-set(SDL2_LIBRARIES "" CACHE FILEPATH "SDL2 Lib")
-set(SDL2_MAIN_LIBRARIES "" CACHE FILEPATH "SDL2 Main Lib")
 
 # Link and create SDL2 Definition if we're using SDL2
 if (SDL2_ENABLED)
-	add_compile_definitions(SAKURA_USE_SDL2)
-	target_include_directories(sakura PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
-	target_link_libraries(sakura PUBLIC ${SDL2_LIBRARIES})
-	target_link_libraries(sakura PUBLIC ${SDL2_MAIN_LIBRARIES})
+	find_package(SDL2 REQUIRED)
+	if (SDL2_FOUND)
+		# Concatenate SDL2_Dir and relative path(suffix of either x64 or x86) here.
+		get_filename_component(SDL2_LIB_DIR ${SDL2_DIR}/${VC_LIB_PATH_SUFFIX} ABSOLUTE)
+		message(STATUS "${SDL2_LIB_DIR}")
+		include_directories(${SDL2_INCLUDE_DIRS})
+		add_post_build_steps(${SDL2_LIB_DIR})
+		target_link_libraries(sakura ${SDL2_LIBRARIES})
+	endif()
 endif()
