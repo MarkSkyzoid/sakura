@@ -34,7 +34,6 @@ if (SDL2_ENABLED)
 	if (SDL2_FOUND)
 		# Concatenate SDL2_Dir and relative path(suffix of either x64 or x86) here.
 		get_filename_component(SDL2_LIB_DIR ${SDL2_DIR}/${VC_LIB_PATH_SUFFIX} ABSOLUTE)
-		message(STATUS "${SDL2_LIB_DIR}")
 		include_directories(${SDL2_INCLUDE_DIRS})
 		add_post_build_steps(${SDL2_LIB_DIR})
 		target_link_libraries(sakura ${SDL2_LIBRARIES})
