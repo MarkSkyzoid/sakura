@@ -19,10 +19,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(sakura
-	
-	src/test.cpp
+file(GLOB sakura_SRC
+	"src/*.hpp"
+	"src/*.cpp"
+)
 
+add_executable(sakura
+	${sakura_SRC}
 )
 
 # Properties
