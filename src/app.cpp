@@ -6,7 +6,7 @@
 
 void sakura::App::run()
 {
-	SKR_ASSERT_M(!is_running(), "App %s is already running!", config_.name);
+	SKR_ASSERT_M(!is_running(), "App %s is already running", config_.name);
 
 	// Init
 	is_running_ = true;
