@@ -2,6 +2,9 @@
 
 #include "type_aliases.hpp"
 
+// #SK_TODO: proper asserts and logging - https://github.com/MarkSkyzoid/sakura/issues/1
+#include <assert.h>
+#define SKR_ASSERT(cond, msg) assert(((void)msg, cond))  
 
 namespace sakura {
 	struct AppConfig

@@ -2,11 +2,11 @@
 
 // #SK_TODO: Create proper platform layer - https://github.com/MarkSkyzoid/sakura/issues/2
 #include "SDL.h" 
-#include "log.hpp"
+
 
 void sakura::App::run()
 {
-	SKR_ASSERT_M(!is_running(), "App %s is already running!", config_.name);
+	SKR_ASSERT(!is_running(), "App's already running!");
 
 	// Init
 	is_running_ = true;
