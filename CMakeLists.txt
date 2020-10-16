@@ -39,6 +39,7 @@ set(SDL2_ENABLED true CACHE BOOL "Use SDL2 as the System implementation")
 if (SDL2_ENABLED)
 	find_package(SDL2 REQUIRED)
 	if (SDL2_FOUND)
+		add_compile_definitions(SAKURA_USE_SDL2)
 		# Concatenate SDL2_Dir and relative path(suffix of either x64 or x86) here.
 		get_filename_component(SDL2_LIB_DIR ${SDL2_DIR}/${VC_LIB_PATH_SUFFIX} ABSOLUTE)
 		include_directories(${SDL2_INCLUDE_DIRS})
