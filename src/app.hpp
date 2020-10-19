@@ -16,13 +16,14 @@ namespace sakura {
 		class Builder;
 
 		App(const AppConfig& config) : config_(config) {}
-		
+
 		void run();
-		
 		bool is_running() const { return is_running_; }
 	private:
-		AppConfig config_;
+		void init();
+		void cleanup();
 
+		AppConfig config_;
 		bool is_running_ = false;
 	};
 

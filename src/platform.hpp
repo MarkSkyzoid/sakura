@@ -15,7 +15,6 @@ namespace sakura {
 			Count
 		};
 
-		
 		void log(Verbosity verbosity, const char* msg);
 	}
 }
