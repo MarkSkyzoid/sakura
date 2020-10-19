@@ -1,7 +1,9 @@
 #pragma once
 
+#include "platform.hpp"
 #include "type_aliases.hpp"
 
+#include <memory>
 
 namespace sakura {
 	struct AppConfig
@@ -10,6 +12,8 @@ namespace sakura {
 		i32 width;
 		i32 height;
 	};
+
+	class IPlatform;
 
 	class App {
 	public:
@@ -25,6 +29,8 @@ namespace sakura {
 
 		AppConfig config_;
 		bool is_running_ = false;
+
+		std::unique_ptr<IPlatform> platform_;
 	};
 
 	class App::Builder {

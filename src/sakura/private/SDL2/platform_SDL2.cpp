@@ -4,6 +4,41 @@
 
 #include "SDL.h"
 
+namespace sakura {
+	class PlatformSDL2 final : public IPlatform {
+	public:
+		~PlatformSDL2() = default;
+
+		void init(const PlatformConfig& config) override
+		{
+			SDL_Init(SDL_INIT_VIDEO);
+			// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
+			window_ = SDL_CreateWindow(
+				config.name,
+				SDL_WINDOWPOS_UNDEFINED,
+				SDL_WINDOWPOS_UNDEFINED,
+				config.width,
+				config.height,
+				0
+			);
+		}
+
+		void cleanup() override
+		{
+			SDL_DestroyWindow(window_);
+			SDL_Quit();
+		}
+
+	private:
+		SDL_Window* window_ = nullptr;
+	};
+}
+
+std::unique_ptr<sakura::IPlatform> sakura::platform::create_platform()
+{
+	return std::make_unique<PlatformSDL2>();
+}
+
 // Debugging
 void sakura::platform::debug_break() {
 	SDL_TriggerBreakpoint();
