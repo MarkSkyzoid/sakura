@@ -1,6 +1,7 @@
 #ifdef SAKURA_USE_SDL2
 
-#include "platform.hpp"
+#include "platform/platform.hpp"
+#include "log/log.hpp"
 
 #include "SDL.h"
 
@@ -11,6 +12,8 @@ namespace sakura {
 
 		void init(const PlatformConfig& config) override
 		{
+			SKR_ASSERT(config.height != 0 && config.width != 0);
+
 			SDL_Init(SDL_INIT_VIDEO);
 			// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
 			window_ = SDL_CreateWindow(

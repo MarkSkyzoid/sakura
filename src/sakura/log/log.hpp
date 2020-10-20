@@ -1,8 +1,9 @@
 #pragma once
 
-#include "platform.hpp"
-
+#include <iostream>
 #include <stdio.h>
+
+#include "type_aliases.hpp"
 
 #if !defined(NDEBUG)
 #define SAKURA_ASSERT_ENABLED
@@ -30,40 +31,46 @@ else { \
 
 namespace sakura {
 	namespace logging {
-		
+		constexpr size_t MESSAGE_SIZE = 1024;
+
+		enum class Verbosity : u8 {
+			Info = 0,
+			Warning,
+			Critical,
+			Count
+		};
+
 		namespace detail {
 			template <typename ... Args>
-			void log(platform::Verbosity verbosity, const char* msg, Args... args) {
-				char buf[256];
-				sprintf_s(buf, 256, msg, args...);
-				platform::log(verbosity, buf);
+			void log(Verbosity verbosity, const char* msg, Args... args) {
+				char buf[MESSAGE_SIZE];
+				sprintf_s(buf, MESSAGE_SIZE, msg, args...);
+				std::cerr << buf << "\n";
 			}
 
-			void log(platform::Verbosity verbosity, const char* msg) {
-				platform::log(verbosity, msg);
-			}
+			void log(Verbosity verbosity, const char* msg);
 		}
 
 		template <typename ... Args>
-		void log(const char* msg, Args... args) {
-			detail::log(platform::Verbosity::Info, msg, args...);
+		void log_info(const char* msg, Args... args) {
+			detail::log(Verbosity::Info, msg, args...);
 		}
 
 		template <typename ... Args>
 		void log_warning(const char* msg, Args... args) {
-			detail::log(platform::Verbosity::Warning, msg, args...);
+			detail::log(Verbosity::Warning, msg, args...);
 		}
 
 		template <typename ... Args>
 		void log_critical(const char* msg, Args... args) {
-			detail::log(platform::Verbosity::Critical, msg, args...);
+			detail::log(Verbosity::Critical, msg, args...);
 		}
 
 		template <typename ... Args>
 		void report_assert(const char* file, i32 line, const char* msg, Args... args) {
-			char buf[256];
-			sprintf_s(buf, 256, msg, args...);
-			detail::log(platform::Verbosity::Critical, "ASSERTION AT \n%s(%d): %s", file, line, buf);
+			char buf[MESSAGE_SIZE];
+			sprintf_s(buf, MESSAGE_SIZE, msg, args...);
+			detail::log(Verbosity::Critical, "ASSERTION AT \n%s(%d): %s", file, line, buf);
 		}
 	}
 }

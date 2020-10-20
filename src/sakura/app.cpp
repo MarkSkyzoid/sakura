@@ -1,7 +1,7 @@
 #include "app.hpp"
 
 #include "SDL.h" 
-#include "log.hpp"
+#include "log/log.hpp"
 
 static SDL_Renderer* g_renderer = nullptr;
 

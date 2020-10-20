@@ -1,7 +1,6 @@
 #pragma once
 
 #include "type_aliases.hpp"
-
 #include <memory>
 
 namespace sakura {
