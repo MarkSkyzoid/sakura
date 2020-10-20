@@ -26,9 +26,11 @@ namespace sakura {
 	private:
 		void init();
 		void cleanup();
+		void request_exit();
 
 		AppConfig config_;
 		bool is_running_ = false;
+		bool is_exiting_ = false;
 
 		std::unique_ptr<IPlatform> platform_;
 	};

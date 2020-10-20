@@ -1,6 +1,7 @@
 #pragma once
 
 #include "type_aliases.hpp"
+#include <functional>
 #include <memory>
 
 namespace sakura {
@@ -8,14 +9,21 @@ namespace sakura {
 		const char* name;
 		i32 width;
 		i32 height;
+
+		std::function<void(void)> exit_callback;
 	};
 
 	class IPlatform {
 	public:
+		IPlatform(const PlatformConfig& config) : config_(config) {}
 		virtual ~IPlatform() = default;
 
-		virtual void init(const PlatformConfig& config) = 0;
+		virtual void init() = 0;
 		virtual void cleanup() = 0;
+		virtual void do_message_pump() = 0;
+
+	protected:
+		PlatformConfig config_;
 	};
 
 	namespace platform {
@@ -24,7 +32,7 @@ namespace sakura {
 		/// It gives ownership of the newly created object to the caller.
 		/// </summary>
 		/// <returns></returns>
-		std::unique_ptr<IPlatform> create_platform();
+		std::unique_ptr<IPlatform> create_platform(const PlatformConfig& config);
 
 		// Debugging
 		void debug_break();

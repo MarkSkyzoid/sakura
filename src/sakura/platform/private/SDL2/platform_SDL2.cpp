@@ -8,20 +8,22 @@
 namespace sakura {
 	class PlatformSDL2 final : public IPlatform {
 	public:
+		PlatformSDL2(const PlatformConfig& config) : IPlatform(config) {}
+
 		~PlatformSDL2() = default;
 
-		void init(const PlatformConfig& config) override
+		void init() override
 		{
-			SKR_ASSERT(config.height != 0 && config.width != 0);
+			SKR_ASSERT(config_.height != 0 && config_.width != 0);
 
 			SDL_Init(SDL_INIT_VIDEO);
 			// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
 			window_ = SDL_CreateWindow(
-				config.name,
+				config_.name,
 				SDL_WINDOWPOS_UNDEFINED,
 				SDL_WINDOWPOS_UNDEFINED,
-				config.width,
-				config.height,
+				config_.width,
+				config_.height,
 				0
 			);
 		}
@@ -32,14 +34,27 @@ namespace sakura {
 			SDL_Quit();
 		}
 
+		virtual void do_message_pump() override
+		{
+            SDL_Event e;
+            while (SDL_PollEvent(&e) != 0) {
+                //User requests quit
+                if (e.type == SDL_QUIT)
+                {
+					SKR_ASSERT(config_.exit_callback);
+					config_.exit_callback();
+                }
+            }
+		}
+
 	private:
 		SDL_Window* window_ = nullptr;
 	};
 }
 
-std::unique_ptr<sakura::IPlatform> sakura::platform::create_platform()
+std::unique_ptr<sakura::IPlatform> sakura::platform::create_platform(const PlatformConfig& config)
 {
-	return std::make_unique<PlatformSDL2>();
+	return std::make_unique<PlatformSDL2>(config);
 }
 
 // Debugging

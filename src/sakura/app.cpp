@@ -6,7 +6,7 @@
 static SDL_Renderer* g_renderer = nullptr;
 
 namespace sakura {
-	static PlatformConfig app_config_to_platform_config(const AppConfig& app_config) {
+	static PlatformConfig platform_config_from_app_config(const AppConfig& app_config) {
 		sakura::PlatformConfig out_config;
 		out_config.name = app_config.name;
 		out_config.width = app_config.width;
@@ -24,17 +24,8 @@ void sakura::App::run()
 	init();
 
 	// Run
-	bool is_exiting = false;
-	while (!is_exiting) {
-		// #SK_TODO: Create platform layer message pump abstraction - https://github.com/MarkSkyzoid/sakura/issues/4
-		SDL_Event e;
-		while (SDL_PollEvent(&e) != 0) {
-			//User requests quit
-			if (e.type == SDL_QUIT)
-			{
-				is_exiting = true;
-			}
-		}
+	while (!is_exiting_) {
+		platform_->do_message_pump();
 //#define SAKURA_RGB 255, 183, 197
 //		SDL_SetRenderDrawColor(g_renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
 //#undef  SAKURA_RGB
@@ -50,8 +41,10 @@ void sakura::App::init()
 {
 	is_running_ = true;
 
-	platform_ = platform::create_platform();
-	platform_->init(app_config_to_platform_config(config_));
+	auto platform_config = platform_config_from_app_config(config_);
+	platform_config.exit_callback = [this]() {this->request_exit(); }; // This is fine because platform is owned by App. Platform won't outlive App.
+	platform_ = platform::create_platform(platform_config);
+	platform_->init();
 
 	//g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_SOFTWARE);
 }
@@ -59,4 +52,10 @@ void sakura::App::init()
 void sakura::App::cleanup()
 {
 	platform_->cleanup();
+	is_running_ = false;
+}
+
+void sakura::App::request_exit()
+{
+    is_exiting_ = true;
 }
