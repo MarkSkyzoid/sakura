@@ -3,10 +3,10 @@
 #include "SDL.h" 
 #include "log/log.hpp"
 
-static SDL_Renderer* g_renderer = nullptr;
-
-namespace sakura {
-	static PlatformConfig platform_config_from_app_config(const AppConfig& app_config) {
+namespace sakura 
+{
+	static PlatformConfig platform_config_from_app_config(const AppConfig& app_config)
+	{
 		sakura::PlatformConfig out_config;
 		out_config.name = app_config.name;
 		out_config.width = app_config.width;
@@ -24,13 +24,20 @@ void sakura::App::run()
 	init();
 
 	// Run
-	while (!is_exiting_) {
+	Clock main_clock(config_.target_frame_rate);
+	main_clock.start_from(0.0);
+	while (!is_exiting_) 
+	{
+		Duration frame_duration;
+
 		platform_->do_message_pump();
-//#define SAKURA_RGB 255, 183, 197
-//		SDL_SetRenderDrawColor(g_renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
-//#undef  SAKURA_RGB
-//		SDL_RenderClear(g_renderer);
-//		SDL_RenderPresent(g_renderer);
+
+		auto dt_seconds = frame_duration.get();
+		main_clock.update(dt_seconds);
+
+		logging::log_info("FPS = %f", 1.0 / dt_seconds);
+		logging::log_info("dt_seconds = %f", dt_seconds);
+		logging::log_info("main_clock_ cycles = %d", main_clock.time_cycles());
 	}
 
 	// Cleanup
@@ -41,12 +48,11 @@ void sakura::App::init()
 {
 	is_running_ = true;
 
+	// Platform system
 	auto platform_config = platform_config_from_app_config(config_);
-	platform_config.exit_callback = [this]() {this->request_exit(); }; // This is fine because platform is owned by App. Platform won't outlive App.
+	platform_config.exit_callback = [this](){ this->request_exit(); }; // This is fine because platform is owned by App. Platform won't outlive App.
 	platform_ = platform::create_platform(platform_config);
 	platform_->init();
-
-	//g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_SOFTWARE);
 }
 
 void sakura::App::cleanup()

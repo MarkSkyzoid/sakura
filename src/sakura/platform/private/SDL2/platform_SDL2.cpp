@@ -5,8 +5,10 @@
 
 #include "SDL.h"
 
-namespace sakura {
-	class PlatformSDL2 final : public IPlatform {
+namespace sakura 
+{
+	class PlatformSDL2 final : public IPlatform
+	{
 	public:
 		PlatformSDL2(const PlatformConfig& config) : IPlatform(config) {}
 
@@ -37,7 +39,8 @@ namespace sakura {
 		virtual void do_message_pump() override
 		{
             SDL_Event e;
-            while (SDL_PollEvent(&e) != 0) {
+            while (SDL_PollEvent(&e) != 0)
+			{
                 //User requests quit
                 if (e.type == SDL_QUIT)
                 {
@@ -57,8 +60,19 @@ std::unique_ptr<sakura::IPlatform> sakura::platform::create_platform(const Platf
 	return std::make_unique<PlatformSDL2>(config);
 }
 
+// Time
+sakura::u64 sakura::platform::get_high_resolution_timer_cycles() 
+{
+	return SDL_GetPerformanceCounter();
+}
+sakura::u64 sakura::platform::get_high_resolution_timer_frequency()
+{
+	return SDL_GetPerformanceFrequency();
+}
+
 // Debugging
-void sakura::platform::debug_break() {
+void sakura::platform::debug_break()
+{
 	SDL_TriggerBreakpoint();
 }
 

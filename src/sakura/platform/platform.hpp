@@ -4,8 +4,10 @@
 #include <functional>
 #include <memory>
 
-namespace sakura {
-	struct PlatformConfig {
+namespace sakura
+{
+	struct PlatformConfig
+	{
 		const char* name;
 		i32 width;
 		i32 height;
@@ -13,7 +15,8 @@ namespace sakura {
 		std::function<void(void)> exit_callback;
 	};
 
-	class IPlatform {
+	class IPlatform
+	{
 	public:
 		IPlatform(const PlatformConfig& config) : config_(config) {}
 		virtual ~IPlatform() = default;
@@ -26,7 +29,8 @@ namespace sakura {
 		PlatformConfig config_;
 	};
 
-	namespace platform {
+	namespace platform
+	{
 		/// <summary>
 		/// Creates a new platform depending on the OS the code is compiled to.
 		/// It gives ownership of the newly created object to the caller.
@@ -34,11 +38,16 @@ namespace sakura {
 		/// <returns></returns>
 		std::unique_ptr<IPlatform> create_platform(const PlatformConfig& config);
 
+		// Time
+		u64 get_high_resolution_timer_cycles();
+		u64 get_high_resolution_timer_frequency();
+
 		// Debugging
 		void debug_break();
 
 		// Logging and displaying
-		enum class Verbosity : u8 {
+		enum class Verbosity : u8
+		{
 			Info = 0,
 			Warning,
 			Critical,
