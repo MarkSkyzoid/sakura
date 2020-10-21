@@ -57,8 +57,10 @@ void sakura::App::init()
 
 void sakura::App::cleanup()
 {
+	SKR_ASSERT_FAST(platform_);
 	platform_->cleanup();
 	is_running_ = false;
+	is_exiting_ = false;
 }
 
 void sakura::App::request_exit()

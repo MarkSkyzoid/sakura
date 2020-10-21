@@ -13,14 +13,14 @@
 #define SKR_ASSERT_M(cond, msg, ...) \
 if(cond) {} \
 else { \
-	sakura::logging::report_assert(__FILE__, __LINE__, msg, __VA_ARGS__); \
-	platform::debug_break(); \
+	char buf[sakura::logging::MESSAGE_SIZE]; \
+	sprintf_s(buf, sakura::logging::MESSAGE_SIZE, msg, __VA_ARGS__); \
+	platform::report_assert(__FILE__, __LINE__, buf, platform::AssertIgnoreMode::CanIgnore); \
 }
 #define SKR_ASSERT(cond) \
 if(cond) {} \
 else { \
-	sakura::logging::report_assert(__FILE__, __LINE__, #cond); \
-	platform::debug_break(); \
+	platform::report_assert(__FILE__, __LINE__, #cond, platform::AssertIgnoreMode::CanIgnore); \
 }
 #define SKR_ASSERT_FAST(cond) if (!(cond)) platform::debug_break();
 #else // SAKURA_ASSERT_ENABLED
@@ -71,14 +71,6 @@ namespace sakura
 		void log_critical(const char* msg, Args... args)
 		{
 			detail::log(Verbosity::Critical, msg, args...);
-		}
-
-		template <typename ... Args>
-		void report_assert(const char* file, i32 line, const char* msg, Args... args)
-		{
-			char buf[MESSAGE_SIZE];
-			sprintf_s(buf, MESSAGE_SIZE, msg, args...);
-			detail::log(Verbosity::Critical, "ASSERTION AT \n%s(%d): %s", file, line, buf);
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace sakura
 
 		void init() override
 		{
-			SKR_ASSERT(config_.height != 0 && config_.width != 0);
+			SKR_ASSERT_M(config_.width != 0 && config_.height != 0, "Can't initialize window with width = %d and height=%d !", config_.width, config_.height);
 
 			SDL_Init(SDL_INIT_VIDEO);
 			// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
@@ -76,27 +76,37 @@ void sakura::platform::debug_break()
 	SDL_TriggerBreakpoint();
 }
 
-// Logging and displaying
-void sakura::platform::log(Verbosity verbosity, const char* msg)
+void sakura::platform::report_assert(const char* file, i32 line, const char* msg, AssertIgnoreMode ignore_mode)
 {
-	SDL_LogPriority priority = SDL_LogPriority::SDL_LOG_PRIORITY_INFO;
-	switch (verbosity)
+	const SDL_MessageBoxButtonData buttons[] =
 	{
-	case sakura::platform::Verbosity::Info:
-		priority = SDL_LogPriority::SDL_LOG_PRIORITY_INFO;
-		break;
-	case sakura::platform::Verbosity::Warning:
-		priority = SDL_LogPriority::SDL_LOG_PRIORITY_WARN;
-		break;
-	case sakura::platform::Verbosity::Critical:
-		priority = SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL;
-		break;
-	case sakura::platform::Verbosity::Count: // Done on purpose.
-	default:
-		break;
-	}
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Abort" },
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Continue" },
+	};
 
-	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, priority, msg);
+	auto can_be_ignored = [](AssertIgnoreMode mode) { return mode == AssertIgnoreMode::CanIgnore; };
+	const auto num_buttons = can_be_ignored(ignore_mode) ? SDL_arraysize(buttons) : 1; // Only show "Abort" if it can't be ignored.
+
+	const SDL_MessageBoxData message_box_data =
+	{
+		SDL_MESSAGEBOX_ERROR, /* .flags */
+		nullptr, /* .window */
+		"Assert!", /* .title */
+		msg, /* .message */
+		num_buttons, /* .numbuttons */
+		buttons, /* .buttons */
+		nullptr /* .colorScheme */
+	};
+
+	int button_id = -1;
+	if (SDL_ShowMessageBox(&message_box_data, &button_id) >= 0) 
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ASSERTION AT \n%s(%d): %s", file, line, msg);
+		if (button_id == 0)
+		{
+			debug_break();
+		}
+	}
 }
 
 #endif // SAKURA_USE_SDL2

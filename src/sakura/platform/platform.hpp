@@ -45,15 +45,12 @@ namespace sakura
 		// Debugging
 		void debug_break();
 
-		// Logging and displaying
-		enum class Verbosity : u8
+		enum class AssertIgnoreMode : u8
 		{
-			Info = 0,
-			Warning,
-			Critical,
+			CanIgnore = 0,
+			CannotIgnore,
 			Count
 		};
-
-		void log(Verbosity verbosity, const char* msg);
+		void report_assert(const char* file, i32 line, const char* msg, AssertIgnoreMode ignore_mode);
 	}
 }
