@@ -85,7 +85,7 @@ void sakura::platform::report_assert(const char* file, i32 line, const char* msg
 	};
 
 	auto can_be_ignored = [](AssertIgnoreMode mode) { return mode == AssertIgnoreMode::CanIgnore; };
-	const auto num_buttons = can_be_ignored(ignore_mode) ? SDL_arraysize(buttons) : 1; // Only show "Abort" if it can't be ignored.
+	const i32 num_buttons = can_be_ignored(ignore_mode) ? SDL_arraysize(buttons) : 1; // Only show "Abort" if it can't be ignored.
 
 	const SDL_MessageBoxData message_box_data =
 	{
