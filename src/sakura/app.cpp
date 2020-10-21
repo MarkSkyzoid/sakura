@@ -34,10 +34,6 @@ void sakura::App::run()
 
 		auto dt_seconds = frame_duration.get();
 		main_clock.update(dt_seconds);
-
-		logging::log_info("FPS = %f", 1.0 / dt_seconds);
-		logging::log_info("dt_seconds = %f", dt_seconds);
-		logging::log_info("main_clock_ cycles = %d", main_clock.time_cycles());
 	}
 
 	// Cleanup
