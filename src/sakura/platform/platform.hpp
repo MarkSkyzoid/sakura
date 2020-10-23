@@ -20,6 +20,9 @@ namespace sakura
 	{
 	public:
 
+		/// <summary>
+		/// These constructors/destructors/assignments need to be defined in the platform specific .cpp file because the unique_ptr implementation needs a concrete type (which is defined there).
+		/// </summary>
 		PlatformHandle();
 		PlatformHandle(std::unique_ptr<Platform> handle);
 		PlatformHandle(PlatformHandle&& other) = default;
