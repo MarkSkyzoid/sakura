@@ -15,28 +15,41 @@ namespace sakura
 		std::function<void(void)> exit_callback;
 	};
 
-	class IPlatform
+	struct Platform;
+	class PlatformHandle
 	{
 	public:
-		IPlatform(const PlatformConfig& config) : config_(config) {}
-		virtual ~IPlatform() = default;
 
-		virtual void init() = 0;
-		virtual void cleanup() = 0;
-		virtual void do_message_pump() = 0;
+		PlatformHandle();
+		PlatformHandle(std::unique_ptr<Platform> handle);
+		PlatformHandle(PlatformHandle&& other) = default;
+		~PlatformHandle();
 
-	protected:
-		PlatformConfig config_;
+		PlatformHandle& operator=(PlatformHandle&& other);
+
+		operator bool() const { return handle_ != nullptr; }
+
+		std::unique_ptr<Platform>& operator->() { return handle_; }
+		const std::unique_ptr<Platform>& operator->() const { return handle_;  }
+
+	private:
+		std::unique_ptr<Platform> handle_;
 	};
 
 	namespace platform
 	{
 		/// <summary>
 		/// Creates a new platform depending on the OS the code is compiled to.
-		/// It gives ownership of the newly created object to the caller.
+		/// It gives ownership of the newly created object to the caller (through a PlatformHandle object).
 		/// </summary>
 		/// <returns></returns>
-		std::unique_ptr<IPlatform> create_platform(const PlatformConfig& config);
+		PlatformHandle create_platform(const PlatformConfig& config);
+
+		// Platform interface
+		void init(PlatformHandle& handle);
+		void cleanup(PlatformHandle& handle);
+		void do_message_pump(PlatformHandle& handle);
+		void* get_native_window_handle(PlatformHandle& handle);
 
 		// Time
 		u64 get_high_resolution_timer_cycles();

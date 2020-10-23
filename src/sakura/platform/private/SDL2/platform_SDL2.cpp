@@ -7,57 +7,72 @@
 
 namespace sakura 
 {
-	class PlatformSDL2 final : public IPlatform
+
+	PlatformHandle::PlatformHandle(std::unique_ptr<Platform> handle) : handle_(std::move(handle)) {	}
+	PlatformHandle::PlatformHandle() : handle_(nullptr) { }
+	PlatformHandle::~PlatformHandle() {}
+
+	sakura::PlatformHandle& PlatformHandle::operator=(PlatformHandle&& other)
 	{
-	public:
-		PlatformSDL2(const PlatformConfig& config) : IPlatform(config) {}
+		handle_ = std::move(other.handle_);
+		return *this;
+	}
 
-		~PlatformSDL2() = default;
+	struct Platform
+	{
+		Platform(const PlatformConfig& config) : config_(config) {}
 
-		void init() override
-		{
-			SKR_ASSERT_M(config_.width != 0 && config_.height != 0, "Can't initialize window with width = %d and height=%d !", config_.width, config_.height);
-
-			SDL_Init(SDL_INIT_VIDEO);
-			// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
-			window_ = SDL_CreateWindow(
-				config_.name,
-				SDL_WINDOWPOS_UNDEFINED,
-				SDL_WINDOWPOS_UNDEFINED,
-				config_.width,
-				config_.height,
-				0
-			);
-		}
-
-		void cleanup() override
-		{
-			SDL_DestroyWindow(window_);
-			SDL_Quit();
-		}
-
-		virtual void do_message_pump() override
-		{
-            SDL_Event e;
-            while (SDL_PollEvent(&e) != 0)
-			{
-                //User requests quit
-                if (e.type == SDL_QUIT)
-                {
-					SKR_ASSERT(config_.exit_callback);
-					config_.exit_callback();
-                }
-            }
-		}
-
-	private:
+		PlatformConfig config_;
 		SDL_Window* window_ = nullptr;
 	};
 }
 
-std::unique_ptr<sakura::IPlatform> sakura::platform::create_platform(const PlatformConfig& config)
+sakura::PlatformHandle sakura::platform::create_platform(const PlatformConfig& config)
 {
-	return std::make_unique<PlatformSDL2>(config);
+	sakura::PlatformHandle handle(std::make_unique<Platform>(config));
+	return handle;
+}
+
+void sakura::platform::init(PlatformHandle& handle)
+{
+	const PlatformConfig& config = handle->config_;
+	SKR_ASSERT_M(config.width != 0 && config.height != 0, "Can't initialize window with width = %d and height=%d !", config.width, config.height);
+
+	SDL_Init(SDL_INIT_VIDEO);
+	// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
+	handle->window_ = SDL_CreateWindow(
+		config.name,
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		config.width,
+		config.height,
+		0
+	);
+}
+
+void sakura::platform::cleanup(PlatformHandle& handle)
+{
+	SDL_DestroyWindow(handle->window_);
+	SDL_Quit();
+}
+
+void sakura::platform::do_message_pump(PlatformHandle& handle)
+{
+	SDL_Event e;
+	while (SDL_PollEvent(&e) != 0)
+	{
+		//User requests quit
+		if (e.type == SDL_QUIT)
+		{
+			SKR_ASSERT(handle->config_.exit_callback);
+			handle->config_.exit_callback();
+		}
+	}
+}
+
+void* sakura::platform::get_native_window_handle(PlatformHandle& handle)
+{
+	return handle->window_;
 }
 
 // Time

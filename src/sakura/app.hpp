@@ -44,7 +44,7 @@ namespace sakura
 		bool is_running_ = false;
 		bool is_exiting_ = false;
 
-		std::unique_ptr<IPlatform> platform_;
+		PlatformHandle platform_;
 	};
 
 	class App::Builder
