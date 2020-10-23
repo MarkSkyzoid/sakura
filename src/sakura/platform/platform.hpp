@@ -49,9 +49,22 @@ namespace sakura
 		PlatformHandle create_platform(const PlatformConfig& config);
 
 		// Platform interface
+		
+		/// <summary>
+		/// Initialize the platform with the given configuration
+		/// </summary>
 		void init(PlatformHandle& handle);
+		/// <summary>
+		/// Call this when you are done using the platform
+		/// </summary>
 		void cleanup(PlatformHandle& handle);
+		/// <summary>
+		/// Handles platform specific event pump
+		/// </summary>
 		void do_message_pump(PlatformHandle& handle);
+		/// <summary>
+		/// Returns a structure with a platform specific window handle (e.g. SDL_Window)
+		/// </summary>
 		void* get_native_window_handle(PlatformHandle& handle);
 
 		// Time
