@@ -1,12 +1,11 @@
 #include "app.hpp"
 
-#include "SDL.h" 
+#include "SDL.h"
 #include "log/log.hpp"
 
 SDL_Renderer* g_renderer = nullptr;
 
-namespace sakura 
-{
+namespace sakura {
 	static PlatformConfig platform_config_from_app_config(const AppConfig& app_config)
 	{
 		sakura::PlatformConfig out_config;
@@ -16,7 +15,7 @@ namespace sakura
 
 		return out_config;
 	}
-}
+} // namespace sakura
 
 void sakura::App::run()
 {
@@ -26,15 +25,15 @@ void sakura::App::run()
 	init();
 
 	// DEBUG DELETE
-	g_renderer = SDL_CreateRenderer((SDL_Window*)platform::get_native_window_handle(platform_), -1, SDL_RENDERER_SOFTWARE);
+	g_renderer = SDL_CreateRenderer((SDL_Window*)platform::get_native_window_handle(platform_), -1,
+											  SDL_RENDERER_SOFTWARE);
 	f32 x = 0;
 	// .
 
 	// Run
 	Clock main_clock(config_.target_frame_rate);
 	main_clock.start_from(0.0);
-	while (!is_exiting_) 
-	{
+	while (!is_exiting_) {
 		Duration frame_duration;
 
 		platform::do_message_pump(platform_);
@@ -43,18 +42,16 @@ void sakura::App::run()
 		{
 #define SAKURA_RGB 255, 183, 197
 			SDL_SetRenderDrawColor(g_renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
-#undef  SAKURA_RGB
+#undef SAKURA_RGB
 			SDL_RenderClear(g_renderer);
 			constexpr float PI = 3.14159265359;
 			main_clock.set_time_scale(3.0);
 			x += 1.0 * main_clock.delta_time_seconds();
-			if (x > 5.0 && x < 8.0)
-			{
+			if (x > 5.0 && x < 8.0) {
 				main_clock.set_time_scale(0.4);
 			}
-			
-			if (x >= 4 * PI)
-			{
+
+			if (x >= 4 * PI) {
 				x = 0.0;
 			}
 
@@ -79,7 +76,7 @@ void sakura::App::run()
 	}
 
 	// DEBUG DELETE
-   SDL_DestroyRenderer(g_renderer);
+	SDL_DestroyRenderer(g_renderer);
 	// .
 
 	// Cleanup
@@ -92,7 +89,8 @@ void sakura::App::init()
 
 	// Platform system
 	auto platform_config = platform_config_from_app_config(config_);
-	platform_config.exit_callback = [this](){ this->request_exit(); }; // This is fine because platform is owned by App. Platform won't outlive App.
+	// This is fine because platform is owned by App. Platform won't outlive App.
+	platform_config.exit_callback = [this]() { this->request_exit(); };
 	platform_ = platform::create_platform(platform_config);
 	platform::init(platform_);
 }
@@ -105,7 +103,4 @@ void sakura::App::cleanup()
 	is_exiting_ = false;
 }
 
-void sakura::App::request_exit()
-{
-    is_exiting_ = true;
-}
+void sakura::App::request_exit() { is_exiting_ = true; }

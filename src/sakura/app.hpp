@@ -6,8 +6,7 @@
 
 #include <memory>
 
-namespace sakura
-{
+namespace sakura {
 	struct AppConfig
 	{
 		// Defaults
@@ -25,7 +24,7 @@ namespace sakura
 
 	class IPlatform;
 
-	class App 
+	class App
 	{
 	public:
 		class Builder;
@@ -55,12 +54,28 @@ namespace sakura
 
 		operator App() { return App(config_); }
 
-		Builder& set_name(const char* name) { config_.name = name; return *this; }
-		Builder& set_width(i32 width) { config_.width = width; return *this; }
-		Builder& set_height(i32 height) { config_.height = height; return *this; }
-		Builder& set_target_frame_rate(f32 frame_rate) { config_.target_frame_rate = frame_rate; return *this; }
+		Builder& set_name(const char* name)
+		{
+			config_.name = name;
+			return *this;
+		}
+		Builder& set_width(i32 width)
+		{
+			config_.width = width;
+			return *this;
+		}
+		Builder& set_height(i32 height)
+		{
+			config_.height = height;
+			return *this;
+		}
+		Builder& set_target_frame_rate(f32 frame_rate)
+		{
+			config_.target_frame_rate = frame_rate;
+			return *this;
+		}
 
 	private:
 		AppConfig config_;
 	};
-}
+} // namespace sakura

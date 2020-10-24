@@ -22,13 +22,12 @@ sakura::time::Seconds sakura::time::calc_delta_time(Cycles end, Cycles begin, f3
 }
 
 //////////////////////////////////////////////////////////////////////////
-/// Clock 
+/// Clock
 //////////////////////////////////////////////////////////////////////////
-sakura::Clock::Clock(f32 frame_rate /*= time::DEFAULT_IDEAL_FRAME_RATE*/) :
-	ideal_frame_rate_(frame_rate),
-	cycles_per_second_(static_cast<f32>(platform::get_high_resolution_timer_frequency()))
-{ 
-}
+sakura::Clock::Clock(f32 frame_rate /*= time::DEFAULT_IDEAL_FRAME_RATE*/)
+: ideal_frame_rate_(frame_rate),
+  cycles_per_second_(static_cast<f32>(platform::get_high_resolution_timer_frequency()))
+{}
 
 void sakura::Clock::start_with_time_now()
 {
@@ -49,8 +48,7 @@ sakura::time::Seconds sakura::Clock::calc_delta_seconds(const Clock& other)
 
 void sakura::Clock::update(time::SecondsDoublePrecision dt_real_seconds)
 {
-	if (!is_paused())
-	{
+	if (!is_paused()) {
 		delta_time_cycles_ = time::seconds_to_cycles(dt_real_seconds * time_scale(), cycles_per_second_);
 		time_cycles_ += delta_time_cycles_;
 	}
@@ -58,9 +56,9 @@ void sakura::Clock::update(time::SecondsDoublePrecision dt_real_seconds)
 
 void sakura::Clock::single_step()
 {
-	if (is_paused())
-	{
-		time::SecondsDoublePrecision inv_frame_rate = 1.0 / ideal_frame_rate(); // #SK_TODO: cache this when setting the ideal frame rate
+	if (is_paused()) {
+		time::SecondsDoublePrecision inv_frame_rate =
+		1.0 / ideal_frame_rate(); // #SK_TODO: cache this when setting the ideal frame rate
 		delta_time_cycles_ = time::seconds_to_cycles(inv_frame_rate * time_scale(), cycles_per_second_);
 		time_cycles_ += delta_time_cycles_;
 	}
@@ -69,11 +67,10 @@ void sakura::Clock::single_step()
 //////////////////////////////////////////////////////////////////////////
 /// Duration
 //////////////////////////////////////////////////////////////////////////
-sakura::Duration::Duration() :
-	cycles_per_second_(static_cast<f32>(platform::get_high_resolution_timer_frequency())),
-	time_cycles_(platform::get_high_resolution_timer_cycles())
-{
-}
+sakura::Duration::Duration()
+: cycles_per_second_(static_cast<f32>(platform::get_high_resolution_timer_frequency())),
+  time_cycles_(platform::get_high_resolution_timer_cycles())
+{}
 
 sakura::time::Seconds sakura::Duration::get() const
 {
