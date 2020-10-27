@@ -1,12 +1,9 @@
 #ifdef SAKURA_USE_SDL2
 
-#include "platform/platform.hpp"
+#include "platform_SDL2.hpp"
 #include "log/log.hpp"
 
-#include "SDL.h"
-
 namespace sakura {
-
 	PlatformHandle::PlatformHandle(std::unique_ptr<Platform> handle) : handle_(std::move(handle)) {}
 	PlatformHandle::PlatformHandle() : handle_(nullptr) {}
 	PlatformHandle::~PlatformHandle() {}
@@ -16,14 +13,6 @@ namespace sakura {
 		handle_ = std::move(other.handle_);
 		return *this;
 	}
-
-	struct Platform
-	{
-		Platform(const PlatformConfig& config) : config_(config) {}
-
-		PlatformConfig config_;
-		SDL_Window* window_ = nullptr;
-	};
 } // namespace sakura
 
 sakura::PlatformHandle sakura::platform::create_platform(const PlatformConfig& config)
@@ -50,15 +39,49 @@ void sakura::platform::cleanup(PlatformHandle& handle)
 	SDL_Quit();
 }
 
+static void handle_sdl_event(const SDL_Event& sdl_event, sakura::PlatformHandle& handle)
+{
+	//
+	switch (sdl_event.type) {
+	case SDL_KEYUP: {
+		auto key_idx = static_cast<sakura::platform::Key>(sdl_event.key.keysym.scancode);
+		handle->get_current_input_state().keyboard_state.key_states[static_cast<sakura::i32>(key_idx)] =
+		sakura::platform::KeyState::Up;
+		break;
+	}
+	case SDL_KEYDOWN: {
+		auto key_idx = static_cast<sakura::platform::Key>(sdl_event.key.keysym.scancode);
+		handle->get_current_input_state().keyboard_state.key_states[static_cast<sakura::i32>(key_idx)] =
+		sakura::platform::KeyState::Down;
+		break;
+	}
+	default: {
+		break;
+	}
+	}
+}
+
 void sakura::platform::do_message_pump(PlatformHandle& handle)
 {
+	// Reset input state for new frame
+	handle->reset_input_state();
+
+	bool call_quit = false;
+
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0) {
 		// User requests quit
 		if (e.type == SDL_QUIT) {
-			SKR_ASSERT(handle->config_.exit_callback);
-			handle->config_.exit_callback();
+			call_quit = true;
+			break;
 		}
+
+		handle_sdl_event(e, handle);
+	}
+
+	if (call_quit) {
+		SKR_ASSERT(handle->config_.exit_callback);
+		handle->config_.exit_callback();
 	}
 }
 

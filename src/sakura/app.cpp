@@ -1,9 +1,14 @@
 #include "app.hpp"
-
 #include "SDL.h"
-#include "log/log.hpp"
 
+#include "log/log.hpp"
+#include "platform/input.hpp"
+
+#include <array>
+
+#pragma region DEBUG_DELETE
 SDL_Renderer* g_renderer = nullptr;
+#pragma endregion DEBUG_DELETE
 
 namespace sakura {
 	static PlatformConfig platform_config_from_app_config(const AppConfig& app_config)
@@ -24,11 +29,13 @@ void sakura::App::run()
 	// Init
 	init();
 
-	// DEBUG DELETE
+#pragma region DEBUG_DELETE
 	g_renderer = SDL_CreateRenderer((SDL_Window*)platform::get_native_window_handle(platform_), -1,
 											  SDL_RENDERER_SOFTWARE);
 	f32 x = 0;
-	// .
+
+	std::array<time::Seconds, platform::MAX_KEYS> key_timer {};
+#pragma endregion DEBUG_DELETE
 
 	// Run
 	Clock main_clock(config_.target_frame_rate);
@@ -38,7 +45,31 @@ void sakura::App::run()
 
 		platform::do_message_pump(platform_);
 
-		// DEBUG DELETE
+#pragma region DEBUG_DELETE_INPUT_TEST
+		const auto& curr_input_state = platform::get_current_input_state(platform_);
+		const auto& prev_input_state = platform::get_previous_input_state(platform_);
+
+		for (int i = 0; i < platform::KeyboardState::number_of_keys; i++) {
+			const auto ideal_frames_number_for_timer = 4.0f * (1.0f / config_.target_frame_rate);
+			if (curr_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
+				 prev_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
+				 key_timer[i] < ideal_frames_number_for_timer) {
+				key_timer[i] += main_clock.delta_time_seconds() / main_clock.time_scale();
+			} else if (curr_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
+						  prev_input_state.keyboard_state.key_states[i] == platform::KeyState::Down) {
+				logging::log_info("you are holding the %s key",
+										platform::get_name_from_key(static_cast<platform::Key>(i)));
+			} else if (curr_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
+						  prev_input_state.keyboard_state.key_states[i] == platform::KeyState::Up) {
+
+				key_timer[i] = 0.0f;
+				logging::log_info("just pressed the %s key",
+										platform::get_name_from_key(static_cast<platform::Key>(i)));
+			}
+		}
+#pragma endregion DEBUG_DELETE_INPUT_TEST
+
+#pragma region DEBUG_DELETE
 		{
 #define SAKURA_RGB 255, 183, 197
 			SDL_SetRenderDrawColor(g_renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
@@ -69,15 +100,15 @@ void sakura::App::run()
 
 			SDL_RenderPresent(g_renderer);
 		}
-		// .
+#pragma endregion DEBUG_DELETE
 
 		auto dt_seconds = frame_duration.get();
 		main_clock.update(dt_seconds);
 	}
 
-	// DEBUG DELETE
+#pragma region DEBUG_DELETE
 	SDL_DestroyRenderer(g_renderer);
-	// .
+#pragma endregion DEBUG_DELETE
 
 	// Cleanup
 	cleanup();
