@@ -4,9 +4,10 @@
 #include "log/log.hpp"
 #include "platform/input.hpp"
 
-#include <array>
-
 #pragma region DEBUG_DELETE
+#include <array>
+#include <algorithm>
+
 SDL_Renderer* g_renderer = nullptr;
 #pragma endregion DEBUG_DELETE
 
@@ -32,8 +33,18 @@ void sakura::App::run()
 #pragma region DEBUG_DELETE
 	g_renderer = SDL_CreateRenderer((SDL_Window*)platform::get_native_window_handle(platform_), -1,
 											  SDL_RENDERER_SOFTWARE);
-	f32 x = 0;
-
+	struct Player
+	{
+		f32 x = 0;
+		f32 y = 0;
+		f32 w = 40;
+		f32 h = 40;
+		f32 x_vel = 0;
+		f32 y_vel = 0;
+		f32 x_accel = 0;
+		f32 y_accel = 0;
+	};
+	Player player;
 	std::array<time::Seconds, platform::MAX_KEYS> key_timer {};
 #pragma endregion DEBUG_DELETE
 
@@ -49,6 +60,7 @@ void sakura::App::run()
 		const auto& curr_input_state = platform::get_current_input_state(platform_);
 		const auto& prev_input_state = platform::get_previous_input_state(platform_);
 
+#if 0
 		for (int i = 0; i < platform::KeyboardState::number_of_keys; i++) {
 			const auto ideal_frames_number_for_timer = 4.0f * (1.0f / config_.target_frame_rate);
 			if (curr_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
@@ -67,6 +79,7 @@ void sakura::App::run()
 										platform::get_name_from_key(static_cast<platform::Key>(i)));
 			}
 		}
+#endif
 #pragma endregion DEBUG_DELETE_INPUT_TEST
 
 #pragma region DEBUG_DELETE
@@ -75,25 +88,71 @@ void sakura::App::run()
 			SDL_SetRenderDrawColor(g_renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
 #undef SAKURA_RGB
 			SDL_RenderClear(g_renderer);
-			constexpr float PI = 3.14159265359;
-			main_clock.set_time_scale(3.0);
-			x += 1.0 * main_clock.delta_time_seconds();
-			if (x > 5.0 && x < 8.0) {
-				main_clock.set_time_scale(0.4);
+			constexpr f32 PI = 3.14159265359;
+			const auto dt = main_clock.delta_time_seconds();
+
+			bool can_jump = false;
+			const auto meters_to_pixels = 15.0f;
+
+			// gravity
+			if (player.y < config_.height - player.h) {
+				player.y_accel += 9.8f;
+			} else {
+				player.y = config_.height - player.h;
+				player.y_accel = 0.0;
+				player.y_vel = 0.0;
+				can_jump = true;
 			}
 
-			if (x >= 4 * PI) {
-				x = 0.0;
+			if (player.x <= 0 || player.x >= (config_.width - player.w)) {
+				player.x_accel = 0.0;
+				player.x_vel = 0.0;
+			}
+
+			if (player.x <= 0) {
+				player.x += 0 - player.x;
+			} else if (player.x >= (config_.width - player.w)) {
+				player.x = config_.width - player.w;
+			}
+			const f32 max_x_accel = 100.0f * meters_to_pixels;
+			{
+				using namespace sakura::platform;
+				if (curr_input_state.keyboard_state.key_states[(i32)Key::Right] == KeyState::Down) {
+					player.x_accel = max_x_accel;
+				} else if (curr_input_state.keyboard_state.key_states[(i32)Key::Left] == KeyState::Down) {
+					player.x_accel = -max_x_accel;
+				}
+
+				if ((curr_input_state.keyboard_state.key_states[(i32)Key::Right] == KeyState::Up &&
+					  prev_input_state.keyboard_state.key_states[(i32)Key::Right] == KeyState::Down) ||
+					 (curr_input_state.keyboard_state.key_states[(i32)Key::Left] == KeyState::Up &&
+					  prev_input_state.keyboard_state.key_states[(i32)Key::Left] == KeyState::Down)) {
+					player.x_accel = 0;
+					player.x_vel = 0;
+				}
+				if (can_jump && curr_input_state.keyboard_state.key_states[(i32)Key::Space] == KeyState::Down) {
+					player.y_accel = -5000.0f;
+				}
+			}
+
+			player.x_vel += std::min(meters_to_pixels, player.x_accel * dt);
+			player.y_vel += player.y_accel * dt;
+			player.x += player.x_vel * dt;
+			player.y += player.y_vel * dt;
+			
+			if (!can_jump) {
+				logging::log_info("player.y_accel %f", player.y_accel);
+				logging::log_info("player.y_vel %f", player.y_vel);
 			}
 
 			SDL_FRect r;
-			r.x = 400 + cos(x) * 160.0f;
-			r.y = 300.0 + sin(x) * 160.0f;
-			r.w = 10;
-			r.h = 10;
+			r.x = player.x;
+			r.y = player.y;
+			r.w = player.w;
+			r.h = player.h;
 
 			// Set render color to blue ( rect will be rendered in this color )
-			SDL_SetRenderDrawColor(g_renderer, 122, 255, 145, 255);
+			SDL_SetRenderDrawColor(g_renderer, 178, 255, 178, 255);
 
 			// Render rect
 			SDL_RenderFillRectF(g_renderer, &r);
