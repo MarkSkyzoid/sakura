@@ -13,7 +13,7 @@ namespace sakura {
 #undef DEFINE_KEY
 		};
 
-		i32 KeyboardState::number_of_keys = std::size(KeyCodes);
+		i32 KeyboardState::number_of_keys = static_cast<i32>(std::size(KeyCodes));
 	}; // namespace platform
 
 	sakura::platform::InputState& sakura::Platform::get_current_input_state()
@@ -55,6 +55,8 @@ namespace sakura {
 		return #name;
 #include "../keyboard_codes.hpp"
 #undef DEFINE_KEY
+
+			return "";
 		}
 
 	} // namespace platform

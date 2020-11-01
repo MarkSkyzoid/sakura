@@ -21,6 +21,7 @@ file(GLOB_RECURSE sakura_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 include_directories(${sakura_SOURCE_DIR})
+include_directories(${sakura_SOURCE_DIR}/../ext/lecs)
 
 add_library(sakura
 	${sakura_SRC}

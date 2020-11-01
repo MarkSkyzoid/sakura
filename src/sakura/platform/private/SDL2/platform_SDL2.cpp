@@ -29,8 +29,8 @@ void sakura::platform::init(PlatformHandle& handle)
 
 	SDL_Init(SDL_INIT_VIDEO);
 	// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
-	handle->window_ = SDL_CreateWindow(config.name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-												  config.width, config.height, 0);
+	handle->window_ = SDL_CreateWindow(config.title, SDL_WINDOWPOS_UNDEFINED,
+												  SDL_WINDOWPOS_UNDEFINED, config.width, config.height, 0);
 }
 
 void sakura::platform::cleanup(PlatformHandle& handle)
@@ -83,6 +83,16 @@ void sakura::platform::do_message_pump(PlatformHandle& handle)
 		SKR_ASSERT(handle->config_.exit_callback);
 		handle->config_.exit_callback();
 	}
+}
+
+void sakura::platform::set_window_title(PlatformHandle& handle, const char* title)
+{
+	SDL_SetWindowTitle(handle->window_, title);
+}
+
+const char* sakura::platform::get_window_title(const PlatformHandle& handle)
+{
+	return SDL_GetWindowTitle(handle->window_);
 }
 
 void* sakura::platform::get_native_window_handle(PlatformHandle& handle) { return handle->window_; }

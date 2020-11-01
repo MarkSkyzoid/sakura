@@ -1,0 +1,3 @@
+[submodule "src/ext/lecs"]
+	path = src/ext/lecs
+	url = https://github.com/MarkSkyzoid/lecs.git

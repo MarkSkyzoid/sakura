@@ -10,13 +10,13 @@ namespace sakura {
 	struct AppConfig
 	{
 		// Defaults
-		static constexpr const char* DEFAULT_NAME = "Sakura Game";
+		static constexpr const char* DEFAULT_TITLE = "Sakura Game";
 		static constexpr i32 DEFAULT_WIDTH = 800;
 		static constexpr i32 DEFAULT_HEIGHT = 600;
 		static constexpr f32 DEFAULT_FRAME_RATE = 30.0f;
 
 		// Fields
-		const char* name = DEFAULT_NAME;
+		const char* title = DEFAULT_TITLE;
 		i32 width = DEFAULT_WIDTH;
 		i32 height = DEFAULT_HEIGHT;
 		f32 target_frame_rate = DEFAULT_FRAME_RATE;
@@ -54,9 +54,9 @@ namespace sakura {
 
 		operator App() { return App(config_); }
 
-		Builder& set_name(const char* name)
+		Builder& set_title(const char* title)
 		{
-			config_.name = name;
+			config_.title = title;
 			return *this;
 		}
 		Builder& set_width(i32 width)

@@ -7,7 +7,7 @@
 namespace sakura {
 	struct PlatformConfig
 	{
-		const char* name;
+		const char* title;
 		i32 width;
 		i32 height;
 
@@ -59,6 +59,14 @@ namespace sakura {
 		/// Handles platform specific event pump
 		/// </summary>
 		void do_message_pump(PlatformHandle& handle);
+		/// <summary>
+		/// Set the main window's title
+		/// </summary>
+		void set_window_title(PlatformHandle& handle, const char* title);
+		/// <summary>
+		/// Retrieve the window's title
+		/// </summary>
+		const char* get_window_title(const PlatformHandle& handle);
 		/// <summary>
 		/// Returns a structure with a platform specific window handle (e.g. SDL_Window)
 		/// </summary>
