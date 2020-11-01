@@ -75,8 +75,12 @@ void sakura::App::run()
 	init();
 
 	// Run
+
+	// Main clock is the main loop clock.
+	// This clock is not meant to be messed with (e.g. with time scale) as it's the true clock.
+	// You can have your own clocks to use, relative to this clock, for updating entities.
 	Clock main_clock(config_.target_frame_rate);
-	main_clock.start_from(0.0);
+	main_clock.start_from(0.0f);
 
 #pragma region DEBUG_DELETE
 	g_renderer = SDL_CreateRenderer((SDL_Window*)platform::get_native_window_handle(platform_), -1,
@@ -100,6 +104,7 @@ void sakura::App::run()
 
 	struct Particle
 	{
+		float2 prev_pos;
 		float2 pos;
 		float2 vel;
 
@@ -108,7 +113,7 @@ void sakura::App::run()
 		static Particle make(float2 p, float2 v)
 		{
 			g_num_balls++;
-			return Particle { p, v };
+			return Particle { p, p, v };
 		};
 	};
 
@@ -157,136 +162,138 @@ void sakura::App::run()
 		Wall* w = ecs.get_component<Wall>(e);
 		*w = walls[i];
 	}
+
+	// Systems declarations
+	auto integration_system = [GRAVITY](ecs::ECS& ecs_instance, float delta_time) {
+		for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
+			Particle* p = ecs_instance.get_component<Particle>(entity);
+			p->prev_pos = p->pos;
+			p->collided = false; // Reset, hack;
+			p->vel = p->vel + GRAVITY * delta_time;
+			p->pos = p->pos + p->vel * delta_time;
+		}
+	};
+
+	auto collision_system = [PARTICLE_RADIUS, PARTICLE_ELASTICITY,
+									 MAX_PARTICLE_VEL](ecs::ECS& ecs_instance, float delta_time) {
+		auto bounce_off = [](float2 n, float e, float d, Particle& p) -> Particle {
+			p.pos = p.pos + n * d;
+			p.vel = p.vel - n * p.vel.dot(n) * (1.0f + e);
+			return p;
+		};
+
+		for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
+			Particle* pa = ecs_instance.get_component<Particle>(entity);
+			Particle& p = *pa;
+			if (p.collided)
+				continue;
+
+			for (ecs::Entity entity : ecs::EntityIterator<Wall>(ecs_instance)) {
+				Wall* w_p = ecs_instance.get_component<Wall>(entity);
+				Wall& w = *w_p;
+				float vel_dot_norm = p.vel.dot(w.n);
+				if (vel_dot_norm < 0.0f) {
+					float p_dot_norm = p.pos.dot(w.n);
+					if (p_dot_norm + w.d < 0.0f) {
+						p = bounce_off(w.n, PARTICLE_ELASTICITY, -(p_dot_norm + w.d), p);
+
+						if (rand_z_to_o() > 0.9) {
+							auto e = ecs_instance.create_entity();
+							ecs_instance.add_component_to_entity<Particle>(e);
+							Particle* new_p = ecs_instance.get_component<Particle>(e);
+							*new_p = Particle::make(p.pos, p.vel * -1.0f);
+						}
+					}
+				}
+			}
+
+			for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
+				Particle* pa2 = ecs_instance.get_component<Particle>(entity);
+				if (pa2 == pa || pa2->collided)
+					continue;
+
+				Particle& p2 = *pa2;
+				if (p.vel.dot(p2.vel) < 0.0f) {
+					auto p2_to_p = p.pos - p2.pos;
+					if (p2_to_p.length_sqr() <= (2.0f * PARTICLE_RADIUS) * (2.0f * PARTICLE_RADIUS)) {
+						const float l = sqrt(p2_to_p.length_sqr());
+						const float d = PARTICLE_RADIUS + PARTICLE_RADIUS - l;
+						p = bounce_off(p2_to_p * (1.0f / (l + 0.0000001)), PARTICLE_ELASTICITY, d, p);
+						p2 = bounce_off(p2_to_p * (1.0f / (l + 0.0000001)), PARTICLE_ELASTICITY, -d, p2);
+						p.collided = p2.collided = true;
+					}
+				}
+			}
+		}
+	};
+
+	auto render_system = [PARTICLE_RADIUS](ecs::ECS& ecs_instance, float delta_time,
+														float interpolator, SDL_Renderer* renderer) {
+#define SAKURA_RGB 255, 183, 197
+		SDL_SetRenderDrawColor(renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
+#undef SAKURA_RGB
+		SDL_RenderClear(renderer);
+
+		// Render particles
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
+			Particle* p = ecs_instance.get_component<Particle>(entity);
+			auto x = p->pos.x * interpolator + p->prev_pos.x * (1.0f - interpolator);
+			auto y = p->pos.y * interpolator + p->prev_pos.y * (1.0f - interpolator);
+			draw_circle(renderer, x, y, PARTICLE_RADIUS);
+		}
+		SDL_RenderPresent(renderer);
+	};
 #pragma endregion DEBUG_DELETE
 
+	const f64 fixed_dt = 1.0 / config_.target_frame_rate;
+	f32 dt_accumulator = 0.0f;
 	while (!is_exiting_) {
 		Duration frame_duration;
+		const auto frame_time = main_clock.delta_time_seconds();
+		dt_accumulator += frame_time;
 
 		platform::do_message_pump(platform_);
 
-#pragma region DEBUG_DELETE_INPUT_TEST
-		const auto& curr_input_state = platform::get_current_input_state(platform_);
-		const auto& prev_input_state = platform::get_previous_input_state(platform_);
+		while (dt_accumulator >= fixed_dt) {
+			// #SK_TODO fixed integration
+			// fixed_update(fixed_dt)
 
-#if 0
-		for (int i = 0; i < platform::KeyboardState::number_of_keys; i++) {
-			const auto ideal_frames_number_for_timer = 4.0f * (1.0f / config_.target_frame_rate);
-			if (curr_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
-				 prev_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
-				 key_timer[i] < ideal_frames_number_for_timer) {
-				key_timer[i] += main_clock.delta_time_seconds() / main_clock.time_scale();
-			} else if (curr_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
-						  prev_input_state.keyboard_state.key_states[i] == platform::KeyState::Down) {
-				logging::log_info("you are holding the %s key",
-										platform::get_name_from_key(static_cast<platform::Key>(i)));
-			} else if (curr_input_state.keyboard_state.key_states[i] == platform::KeyState::Down &&
-						  prev_input_state.keyboard_state.key_states[i] == platform::KeyState::Up) {
+#pragma region DEBUG_DELETE
+			{
+				// Update
+				{
+					const auto dt = fixed_dt; // main_clock.delta_time_seconds();
 
-				key_timer[i] = 0.0f;
-				logging::log_info("just pressed the %s key",
-										platform::get_name_from_key(static_cast<platform::Key>(i)));
+					// Update systems
+					integration_system(ecs, dt);
+
+					collision_system(ecs, dt);
+				}
 			}
+#pragma endregion DEBUG_DELETE
+			dt_accumulator -= fixed_dt;
 		}
-#endif
-#pragma endregion DEBUG_DELETE_INPUT_TEST
+
+		const f32 frame_interpolator = dt_accumulator / fixed_dt;
+
+		// #SK_TODO: update
+		// update(frame_time);
+		// render(frame_time);
 
 #pragma region DEBUG_DELETE
 		{
 			// Update
 			{
-				const auto dt = main_clock.delta_time_seconds();
-
-				// Systems declarations
-				auto integration_system = [GRAVITY](ecs::ECS& ecs_instance, float delta_time) {
-					for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
-						Particle* p = ecs_instance.get_component<Particle>(entity);
-						p->collided = false; // Reset, hacky
-						p->vel = p->vel + GRAVITY * delta_time;
-						p->pos = p->pos + p->vel * delta_time;
-					}
-				};
-
-				auto collision_system = [PARTICLE_RADIUS, PARTICLE_ELASTICITY,
-												 MAX_PARTICLE_VEL](ecs::ECS& ecs_instance, float delta_time) {
-					auto bounce_off = [](float2 n, float e, float d, Particle& p) -> Particle {
-						p.pos = p.pos + n * d;
-						p.vel = p.vel - n * p.vel.dot(n) * (1.0f + e);
-						return p;
-					};
-
-					for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
-						Particle* pa = ecs_instance.get_component<Particle>(entity);
-						Particle& p = *pa;
-						if (p.collided)
-							continue;
-
-						for (ecs::Entity entity : ecs::EntityIterator<Wall>(ecs_instance)) {
-							Wall* w_p = ecs_instance.get_component<Wall>(entity);
-							Wall& w = *w_p;
-							float vel_dot_norm = p.vel.dot(w.n);
-							if (vel_dot_norm < 0.0f) {
-								float p_dot_norm = p.pos.dot(w.n);
-								if (p_dot_norm + w.d < 0.0f) {
-									p = bounce_off(w.n, PARTICLE_ELASTICITY, -(p_dot_norm + w.d), p);
-
-									if (rand_z_to_o() > 0.9) {
-										auto e = ecs_instance.create_entity();
-										ecs_instance.add_component_to_entity<Particle>(e);
-										Particle* new_p = ecs_instance.get_component<Particle>(e);
-										*new_p = Particle::make(p.pos, p.vel * -1.0f);
-									}
-								}
-							}
-						}
-
-						for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
-							Particle* pa2 = ecs_instance.get_component<Particle>(entity);
-							if (pa2 == pa || pa2->collided)
-								continue;
-
-							Particle& p2 = *pa2;
-							if (p.vel.dot(p2.vel) < 0.0f) {
-								auto p2_to_p = p.pos - p2.pos;
-								if (p2_to_p.length_sqr() <= (PARTICLE_RADIUS * PARTICLE_RADIUS)) {
-									const float l = sqrt(p2_to_p.length_sqr());
-									const float d = PARTICLE_RADIUS - l;
-									p = bounce_off(p2_to_p * +(1.0f / (l + 0.0000001)), PARTICLE_ELASTICITY, d, p);
-									p2 = bounce_off(p2_to_p * -(1.0f / (l + 0.0000001)), PARTICLE_ELASTICITY, d, p2);
-									p.collided = p2.collided = true;
-								}
-							}
-						}
-					}
-				};
-
-				auto render_system = [PARTICLE_RADIUS](ecs::ECS& ecs_instance, float delta_time,
-																	SDL_Renderer* renderer) {
-#define SAKURA_RGB 255, 183, 197
-					SDL_SetRenderDrawColor(renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
-#undef SAKURA_RGB
-					SDL_RenderClear(renderer);
-
-					// Render particles
-					SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-					for (ecs::Entity entity : ecs::EntityIterator<Particle>(ecs_instance)) {
-						Particle* p = ecs_instance.get_component<Particle>(entity);
-						draw_circle(renderer, p->pos.x, p->pos.y, PARTICLE_RADIUS);
-					}
-					SDL_RenderPresent(renderer);
-				};
+				const auto dt = frame_time;
 
 				// Update systems
-				integration_system(ecs, dt);
-
-				collision_system(ecs, dt);
-
-				render_system(ecs, dt, g_renderer);
+				render_system(ecs, dt, frame_interpolator, g_renderer);
 			}
 
 			{
 				char title[256];
-				sprintf_s(title, "%s - FPS: %f - balls: %d", config_.title,
-							 1.0f / main_clock.delta_time_seconds(), g_num_balls);
+				sprintf_s(title, "%s - FPS: %f - balls: %d", config_.title, 1.0f / frame_time, g_num_balls);
 				platform::set_window_title(platform_, title);
 			}
 		}
