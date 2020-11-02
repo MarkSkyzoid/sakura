@@ -256,9 +256,7 @@ void sakura::App::run()
 		platform::do_message_pump(platform_);
 
 		while (dt_accumulator >= fixed_dt) {
-			// #SK_TODO fixed integration
-			// fixed_update(fixed_dt)
-
+			config_.fixed_update_callback(fixed_dt);
 #pragma region DEBUG_DELETE
 			{
 				// Update
@@ -277,9 +275,8 @@ void sakura::App::run()
 
 		const f32 frame_interpolator = dt_accumulator / fixed_dt;
 
-		// #SK_TODO: update
-		// update(frame_time);
-		// render(frame_time);
+		config_.update_callback(frame_time);
+		config_.render_callback(frame_time, frame_interpolator);
 
 #pragma region DEBUG_DELETE
 		{
@@ -332,3 +329,16 @@ void sakura::App::cleanup()
 }
 
 void sakura::App::request_exit() { is_exiting_ = true; }
+
+sakura::App::Builder::operator sakura::App() const
+{
+	SKR_ASSERT_FATAL_M(config_.fixed_update_callback != nullptr,
+							 "Fixed Update Callback not set.\nCall .set_fixed_update_callback on the "
+							 "App::Builder");
+	SKR_ASSERT_FATAL_M(config_.update_callback != nullptr,
+							 "Update Callback not set.\nCall .set_update_callback on the App::Builder");
+	SKR_ASSERT_FATAL_M(config_.render_callback != nullptr,
+							 "Render Callback not set.\nCall .set_render_callback on the App::Builder");
+
+	return App(config_);
+}

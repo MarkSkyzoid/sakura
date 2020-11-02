@@ -20,6 +20,12 @@ namespace sakura {
 		i32 width = DEFAULT_WIDTH;
 		i32 height = DEFAULT_HEIGHT;
 		f32 target_frame_rate = DEFAULT_FRAME_RATE;
+
+		using UpdateCallbackType = void (*)(f32 dt);
+		using RenderCallbackType = void (*)(f32 dt, f32 frame_interpolator);
+		UpdateCallbackType fixed_update_callback = nullptr;
+		UpdateCallbackType update_callback = nullptr;
+		RenderCallbackType render_callback = nullptr;
 	};
 
 	class IPlatform;
@@ -52,7 +58,7 @@ namespace sakura {
 		Builder() = default;
 		~Builder() = default;
 
-		operator App() { return App(config_); }
+		operator App() const;
 
 		Builder& set_title(const char* title)
 		{
@@ -72,6 +78,21 @@ namespace sakura {
 		Builder& set_target_frame_rate(f32 frame_rate)
 		{
 			config_.target_frame_rate = frame_rate;
+			return *this;
+		}
+		Builder& set_fixed_update_callback(AppConfig::UpdateCallbackType callback)
+		{
+			config_.fixed_update_callback = callback;
+			return *this;
+		}
+		Builder& set_update_callback(AppConfig::UpdateCallbackType callback)
+		{
+			config_.update_callback = callback;
+			return *this;
+		}
+		Builder& set_render_callback(AppConfig::RenderCallbackType callback)
+		{
+			config_.render_callback = callback;
 			return *this;
 		}
 

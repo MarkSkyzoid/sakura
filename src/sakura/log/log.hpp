@@ -22,10 +22,24 @@
 	} else {                                                                                      \
 		platform::report_assert(__FILE__, __LINE__, #cond, platform::AssertIgnoreMode::CanIgnore); \
 	}
+#define SKR_ASSERT_FATAL_M(cond, msg, ...)                                                     \
+	if (cond) {                                                                                 \
+	} else {                                                                                    \
+		char buf[sakura::logging::MESSAGE_SIZE];                                                 \
+		sprintf_s(buf, sakura::logging::MESSAGE_SIZE, msg, __VA_ARGS__);                         \
+		platform::report_assert(__FILE__, __LINE__, buf, platform::AssertIgnoreMode::CannotIgnore); \
+	}
+#define SKR_ASSERT_FATAL(cond)                                                                   \
+	if (cond) {                                                                                   \
+	} else {                                                                                      \
+		platform::report_assert(__FILE__, __LINE__, #cond, platform::AssertIgnoreMode::CannotIgnore); \
+	}
 #define SKR_ASSERT_FAST(cond) \
 	if (!(cond))               \
 		platform::debug_break();
 #else // SAKURA_ASSERT_ENABLED
+#define SKR_ASSERT_FATAL_M(cond, msg, ...)
+#define SKR_ASSERT_FATAL(cond)
 #define SKR_ASSERT_M(cond, msg, ...)
 #define SKR_ASSERT(cond)
 #define SKR_ASSERT_FAST(cond)
