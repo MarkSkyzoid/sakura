@@ -70,7 +70,7 @@ namespace sakura {
 		/// <summary>
 		/// Returns a structure with a platform specific window handle (e.g. SDL_Window)
 		/// </summary>
-		void* get_native_window_handle(PlatformHandle& handle);
+		void* get_native_window_handle(const PlatformHandle& handle);
 
 		// Time
 		u64 get_high_resolution_timer_cycles();

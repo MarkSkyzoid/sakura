@@ -95,7 +95,10 @@ const char* sakura::platform::get_window_title(const PlatformHandle& handle)
 	return SDL_GetWindowTitle(handle->window_);
 }
 
-void* sakura::platform::get_native_window_handle(PlatformHandle& handle) { return handle->window_; }
+void* sakura::platform::get_native_window_handle(const PlatformHandle& handle)
+{
+	return handle->window_;
+}
 
 // Time
 sakura::u64 sakura::platform::get_high_resolution_timer_cycles()

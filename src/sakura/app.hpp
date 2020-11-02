@@ -7,6 +7,7 @@
 #include <memory>
 
 namespace sakura {
+	class App;
 	struct AppConfig
 	{
 		// Defaults
@@ -21,8 +22,11 @@ namespace sakura {
 		i32 height = DEFAULT_HEIGHT;
 		f32 target_frame_rate = DEFAULT_FRAME_RATE;
 
-		using UpdateCallbackType = void (*)(f32 dt);
-		using RenderCallbackType = void (*)(f32 dt, f32 frame_interpolator);
+		using InitCleanupCallbackType = void (*)(const App& app);
+		using UpdateCallbackType = void (*)(f32 dt, const App& app);
+		using RenderCallbackType = void (*)(f32 dt, f32 frame_interpolator, const App& app);
+		InitCleanupCallbackType init_callback = nullptr;
+		InitCleanupCallbackType cleanup_callback = nullptr;
 		UpdateCallbackType fixed_update_callback = nullptr;
 		UpdateCallbackType update_callback = nullptr;
 		RenderCallbackType render_callback = nullptr;
@@ -40,6 +44,12 @@ namespace sakura {
 		void run();
 		bool is_running() const { return is_running_; }
 
+		const PlatformHandle& platform_handle() const { return platform_; }
+		const Clock& main_clock() const { return main_clock_; }
+
+		const char* get_window_title() const;
+		void set_window_title(const char* title);
+
 	private:
 		void init();
 		void cleanup();
@@ -50,6 +60,7 @@ namespace sakura {
 		bool is_exiting_ = false;
 
 		PlatformHandle platform_;
+		Clock main_clock_;
 	};
 
 	class App::Builder
@@ -78,6 +89,16 @@ namespace sakura {
 		Builder& set_target_frame_rate(f32 frame_rate)
 		{
 			config_.target_frame_rate = frame_rate;
+			return *this;
+		}
+		Builder& set_init_callback(AppConfig::InitCleanupCallbackType callback)
+		{
+			config_.init_callback = callback;
+			return *this;
+		}
+		Builder& set_cleanup_callback(AppConfig::InitCleanupCallbackType callback)
+		{
+			config_.cleanup_callback = callback;
 			return *this;
 		}
 		Builder& set_fixed_update_callback(AppConfig::UpdateCallbackType callback)

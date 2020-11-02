@@ -26,6 +26,7 @@ if (SDL2_ENABLED)
 	find_package(SDL2 REQUIRED)
 	if (SDL2_FOUND)
         # Concatenate SDL2_Dir and relative path(suffix of either x64 or x86) here.
+		include_directories(${SDL2_INCLUDE_DIRS})
 		get_filename_component(SDL2_LIB_DIR ${SDL2_DIR}/${VC_LIB_PATH_SUFFIX} ABSOLUTE)
 		add_post_build_steps(${SDL2_LIB_DIR})
 	endif()

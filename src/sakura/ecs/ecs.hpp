@@ -1,7 +1,7 @@
 #pragma once
 
 // #SK_TODO: Config lecs
-#include "lecs/lecs.hpp"
+#include "../../ext/lecs/lecs/lecs.hpp"
 
 namespace sakura {
 	namespace ecs {
