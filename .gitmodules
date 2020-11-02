@@ -1,3 +1,10 @@
 [submodule "src/ext/lecs"]
 	path = src/ext/lecs
 	url = https://github.com/MarkSkyzoid/lecs.git
+[submodule "src/ext/imgui_sdl"]
+	path = src/ext/imgui_sdl
+	url = https://github.com/Tyyppi77/imgui_sdl.git
+[submodule "src/ext/imgui"]
+	path = src/ext/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking

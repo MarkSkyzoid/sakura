@@ -137,10 +137,6 @@ void init(const sakura::App& app)
 void cleanup(const sakura::App& app) { SDL_DestroyRenderer(g_renderer); }
 void fixed_update(sakura::f32 dt, const sakura::App& app)
 {
-	sakura::logging::log_info("fixed_update(%f)", dt);
-}
-void update(sakura::f32 dt, const sakura::App& app)
-{
 	auto integration_system = [](sakura::ecs::ECS& ecs_instance, float delta_time) {
 		for (sakura::ecs::Entity entity : sakura::ecs::EntityIterator<Particle>(ecs_instance)) {
 			Particle* p = ecs_instance.get_component<Particle>(entity);
@@ -204,9 +200,9 @@ void update(sakura::f32 dt, const sakura::App& app)
 	};
 
 	integration_system(world_ecs, dt);
-
 	collision_system(world_ecs, dt);
 }
+void update(sakura::f32 dt, const sakura::App& app) {}
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
 	auto render_system = [](sakura::ecs::ECS& ecs_instance, float delta_time, float interpolator,
