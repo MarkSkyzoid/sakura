@@ -1,11 +1,13 @@
 #include "game.hpp"
 #include "log/log.hpp"
+#include "serialization/serialization.hpp"
 #include "SDL.h"
 
 #include "ecs/ecs.hpp"
 
 #include <array>
 #include <algorithm>
+#include <sstream>
 
 static int g_num_balls = 0;
 
@@ -63,6 +65,7 @@ struct float2
 
 	float dot(const float2 rhs) const { return (x * rhs.x + y * rhs.y); };
 };
+SAKURA_STRUCT(float2, SAKURA_FIELD(x), SAKURA_FIELD(y));
 
 struct Particle
 {
@@ -75,9 +78,14 @@ struct Particle
 	static Particle make(float2 p, float2 v)
 	{
 		g_num_balls++;
-		return Particle { p, p, v };
+		auto par = Particle { p, p, v };
+		std::stringstream ss;
+		sakura::ser::print_struct(ss, par);
+		sakura::logging::log_info(ss.str().c_str());
+		return par;
 	};
 };
+SAKURA_STRUCT(Particle, SAKURA_FIELD(pos) SAKURA_FIELD(vel));
 
 struct Wall
 {
@@ -203,7 +211,8 @@ void sakura::game_lib::fixed_update(f32 dt, const App& app)
 
 void sakura::game_lib::update(f32 dt, const App& app) {}
 
-void sakura::game_lib::render(f32 dt, f32 frame_interpolator, const App& app, SDL_Renderer* renderer) {
+void sakura::game_lib::render(f32 dt, f32 frame_interpolator, const App& app, SDL_Renderer* renderer)
+{
 	auto render_system = [](sakura::ecs::ECS& ecs_instance, float delta_time, float interpolator,
 									SDL_Renderer* renderer) {
 #define SAKURA_RGB 255, 183, 197
