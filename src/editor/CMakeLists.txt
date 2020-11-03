@@ -64,3 +64,4 @@ if (SDL2_ENABLED)
 endif()
 
 target_link_libraries(sakura_editor sakura)
+target_link_libraries(sakura_editor sakura_game_lib)

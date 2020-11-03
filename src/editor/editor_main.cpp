@@ -8,6 +8,8 @@
 #include "../ext/imgui/imgui.h"
 #include "../ext/imgui_sdl/imgui_sdl.h"
 #include "backends/imgui_impl_sdl.h"
+#include "../game_lib/game.hpp"
+
 
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
@@ -15,7 +17,7 @@ constexpr sakura::i32 HEIGHT = 768;
 SDL_Renderer* g_renderer = nullptr;
 SDL_Texture* g_scene_texture = nullptr;
 
-sakura::ecs::ECS world_ecs {};
+static sakura::ecs::ECS editor_ecs {};
 
 void CherryTheme()
 {
@@ -157,14 +159,23 @@ void init(const sakura::App& app)
 	}
 
 	ImGuiSDL::Initialize(g_renderer, WIDTH, HEIGHT);
+
+	// Init game
+	sakura::game_lib::init(app);
 }
 void cleanup(const sakura::App& app)
 {
+	// Clean up game first
+	sakura::game_lib::cleanup(app);
+
 	ImGuiSDL::Deinitialize();
 	SDL_DestroyRenderer(g_renderer);
 	ImGui::DestroyContext();
 }
-void fixed_update(sakura::f32 dt, const sakura::App& app) {}
+void fixed_update(sakura::f32 dt, const sakura::App& app)
+{
+	sakura::game_lib::fixed_update(dt, app);
+}
 
 void ImGui_UpdateMousePosAndButtons()
 {
@@ -183,6 +194,8 @@ void ImGui_UpdateMousePosAndButtons()
 }
 void update(sakura::f32 dt, const sakura::App& app)
 {
+	sakura::game_lib::update(dt, app);
+
 	ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(app.native_window_handle()));
 	ImGui_UpdateMousePosAndButtons();
 
@@ -242,18 +255,16 @@ void update(sakura::f32 dt, const sakura::App& app)
 	ImGui::End();
 
 	bool b_demo_window_open = false;
-	//ImGui::ShowDemoWindow(&b_demo_window_open);
+	// ImGui::ShowDemoWindow(&b_demo_window_open);
 }
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
-	auto render_system = [](sakura::ecs::ECS& ecs_instance, float delta_time, float interpolator,
-									SDL_Renderer* renderer) {
-		// Render normal scene
+	auto render_system = [&app](sakura::ecs::ECS& ecs_instance, float delta_time, float interpolator,
+										 SDL_Renderer* renderer) {
+		// Render game scene
 		SDL_SetRenderTarget(renderer, g_scene_texture);
-#define SAKURA_RGB 255, 183, 197
-		SDL_SetRenderDrawColor(renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
-#undef SAKURA_RGB
-		SDL_RenderClear(renderer);
+
+		sakura::game_lib::render(delta_time, interpolator, app, renderer);
 
 		// Render imgui
 		SDL_SetRenderTarget(renderer, NULL);
@@ -263,7 +274,7 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 		SDL_RenderPresent(renderer);
 	};
 
-	render_system(world_ecs, dt, frame_interpolator, g_renderer);
+	render_system(editor_ecs, dt, frame_interpolator, g_renderer);
 
 	{
 		sakura::logging::log_info("FPS: %f", 1.0f / dt);

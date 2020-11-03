@@ -48,6 +48,8 @@ namespace sakura {
 		void run();
 		bool is_running() const { return is_running_; }
 
+		const AppConfig& config() const { return config_; }
+
 		const PlatformHandle& platform_handle() const { return platform_; }
 		const Clock& main_clock() const { return main_clock_; }
 
