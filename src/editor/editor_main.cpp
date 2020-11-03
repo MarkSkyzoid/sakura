@@ -10,7 +10,6 @@
 #include "backends/imgui_impl_sdl.h"
 #include "../game_lib/game.hpp"
 
-
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
 

@@ -1,24 +1,24 @@
 # Macros
 macro(add_post_build_steps libraryPath)
     if (WIN32 AND CMAKE_SYSTEM_VERSION)
-     add_custom_command(TARGET sakura_examples POST_BUILD
+     add_custom_command(TARGET sakura_launcher POST_BUILD
      COMMAND ${CMAKE_COMMAND} -E copy_if_different
          ${libraryPath}/SDL2.dll
-         $<TARGET_FILE_DIR:sakura_examples>/SDL2.dll)
+         $<TARGET_FILE_DIR:sakura_launcher>/SDL2.dll)
     endif()
 endmacro()
 
-project(sakura_examples)
+project(sakura_launcher)
 
 include_directories(${sakura_SOURCE_DIR})
 
-file(GLOB sakura_examples_SRC
+file(GLOB sakura_launcher_SRC
 	"*.hpp"
 	"*.cpp"
 )
 
-add_executable(sakura_examples
-	${sakura_examples_SRC}
+add_executable(sakura_launcher
+	${sakura_launcher_SRC}
 )
 
 # Link and create SDL2 Definition if we're using SDL2
@@ -32,4 +32,5 @@ if (SDL2_ENABLED)
 	endif()
 endif()
 
-target_link_libraries(sakura_examples sakura)
+target_link_libraries(sakura_launcher sakura)
+target_link_libraries(sakura_launcher sakura_game_lib)
