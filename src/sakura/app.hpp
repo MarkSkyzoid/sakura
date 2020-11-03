@@ -23,6 +23,7 @@ namespace sakura {
 		f32 target_frame_rate = DEFAULT_FRAME_RATE;
 
 		using InitCleanupCallbackType = void (*)(const App& app);
+		using NativeMessagePumpCallback = void (*)(void* data);  /* #SK_TODO: DELETE */
 		using UpdateCallbackType = void (*)(f32 dt, const App& app);
 		using RenderCallbackType = void (*)(f32 dt, f32 frame_interpolator, const App& app);
 		InitCleanupCallbackType init_callback = nullptr;
@@ -30,6 +31,8 @@ namespace sakura {
 		UpdateCallbackType fixed_update_callback = nullptr;
 		UpdateCallbackType update_callback = nullptr;
 		RenderCallbackType render_callback = nullptr;
+		/* #SK_TODO: DELETE */
+		NativeMessagePumpCallback native_message_pump_callback = nullptr;
 	};
 
 	class IPlatform;
@@ -47,8 +50,10 @@ namespace sakura {
 		const PlatformHandle& platform_handle() const { return platform_; }
 		const Clock& main_clock() const { return main_clock_; }
 
-		const char* get_window_title() const;
+		const char* window_title() const;
 		void set_window_title(const char* title);
+
+		void* native_window_handle() const;
 
 	private:
 		void init();
@@ -114,6 +119,12 @@ namespace sakura {
 		Builder& set_render_callback(AppConfig::RenderCallbackType callback)
 		{
 			config_.render_callback = callback;
+			return *this;
+		}
+		/* #SK_TODO: DELETE */
+		Builder& set_native_message_pump_callback(AppConfig::NativeMessagePumpCallback callback)
+		{
+			config_.native_message_pump_callback = callback;
 			return *this;
 		}
 

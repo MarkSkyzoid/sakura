@@ -61,7 +61,7 @@ static void handle_sdl_event(const SDL_Event& sdl_event, sakura::PlatformHandle&
 	}
 }
 
-void sakura::platform::do_message_pump(PlatformHandle& handle)
+void sakura::platform::do_message_pump(PlatformHandle& handle, void (*callback)(void* data) /* #SK_TODO: DELETE */)
 {
 	// Reset input state for new frame
 	handle->reset_input_state();
@@ -77,6 +77,11 @@ void sakura::platform::do_message_pump(PlatformHandle& handle)
 		}
 
 		handle_sdl_event(e, handle);
+
+		// #SK_TODO: DELETE
+		if (callback) {
+			callback(&e);
+		}
 	}
 
 	if (call_quit) {

@@ -11,10 +11,35 @@ endmacro()
 project(sakura_editor)
 
 include_directories(${sakura_SOURCE_DIR})
+include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
+
+source_group(imgui FILES
+	"${sakura_SOURCE_DIR}/../ext/imgui/imgui.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imgui.cpp"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imgui_demo.cpp"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imgui_draw.cpp"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imgui_widgets.cpp"
+
+	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.cpp"
+	
+	
+	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.cpp"
+)
 
 file(GLOB sakura_editor_SRC
 	"*.hpp"
 	"*.cpp"
+	
+	"${sakura_SOURCE_DIR}/../ext/imgui/*.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/*.cpp"
+
+	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.cpp"
+
+	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.cpp"
 )
 
 add_executable(sakura_editor

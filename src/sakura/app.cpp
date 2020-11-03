@@ -31,7 +31,7 @@ void sakura::App::run()
 		dt_accumulator += frame_time;
 
 		// Platform specific update
-		platform::do_message_pump(platform_);
+		platform::do_message_pump(platform_, config_.native_message_pump_callback /* #SK_TODO: DELETE */);
 
 		// Fixed timestep update
 		while (dt_accumulator >= fixed_dt) {
@@ -55,12 +55,14 @@ void sakura::App::run()
 	cleanup();
 }
 
-const char* sakura::App::get_window_title() const { return platform::get_window_title(platform_); }
+const char* sakura::App::window_title() const { return platform::get_window_title(platform_); }
 
 void sakura::App::set_window_title(const char* title)
 {
 	platform::set_window_title(platform_, title);
 }
+
+void* sakura::App::native_window_handle() const { return platform::get_native_window_handle(platform_); }
 
 void sakura::App::init()
 {

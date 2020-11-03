@@ -58,7 +58,7 @@ namespace sakura {
 		/// <summary>
 		/// Handles platform specific event pump
 		/// </summary>
-		void do_message_pump(PlatformHandle& handle);
+		void do_message_pump(PlatformHandle& handle, void (*callback)(void* data) /* #SK_TODO: DELETE */);
 		/// <summary>
 		/// Set the main window's title
 		/// </summary>
