@@ -10,7 +10,7 @@ namespace sakura {
 		out_config.title = app_config.title;
 		out_config.width = app_config.width;
 		out_config.height = app_config.height;
-
+		out_config.resizable = app_config.resizable;
 		return out_config;
 	}
 } // namespace sakura

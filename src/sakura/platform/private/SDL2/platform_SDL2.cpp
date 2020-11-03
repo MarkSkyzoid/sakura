@@ -28,9 +28,12 @@ void sakura::platform::init(PlatformHandle& handle)
 					 "Can't initialize window with width = %d and height=%d !", config.width, config.height);
 
 	SDL_Init(SDL_INIT_VIDEO);
+
+	Uint32 window_flags = 0u;
+	window_flags |= config.resizable ? SDL_WINDOW_RESIZABLE : 0u;
 	// #SK_TODO: Create platform window abstraction - https://github.com/MarkSkyzoid/sakura/issues/3
-	handle->window_ = SDL_CreateWindow(config.title, SDL_WINDOWPOS_UNDEFINED,
-												  SDL_WINDOWPOS_UNDEFINED, config.width, config.height, 0);
+	handle->window_ = SDL_CreateWindow(config.title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+												  config.width, config.height, window_flags);
 }
 
 void sakura::platform::cleanup(PlatformHandle& handle)

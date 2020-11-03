@@ -13,6 +13,7 @@ constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
 
 SDL_Renderer* g_renderer = nullptr;
+SDL_Texture* g_scene_texture = nullptr;
 
 sakura::ecs::ECS world_ecs {};
 
@@ -91,11 +92,18 @@ void init(const sakura::App& app)
 	SDL_CreateRenderer((SDL_Window*)sakura::platform::get_native_window_handle(app.platform_handle()),
 							 -1, SDL_RENDERER_SOFTWARE);
 
+	g_scene_texture =
+	SDL_CreateTexture(g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIDTH, HEIGHT);
+
+	// Imgui
 	ImGui::CreateContext();
-	ImGuiSDL::Initialize(g_renderer, WIDTH, HEIGHT);
 
 	ImGuiIO& io = ImGui::GetIO();
 	(void)io;
+
+	// Config
+	io.IniFilename = "config/editor/imgui.ini";
+
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
@@ -133,14 +141,22 @@ void init(const sakura::App& app)
 	io.ClipboardUserData = NULL;
 
 	// Setup Dear ImGui style
-	CherryTheme();
-
+	{
+		CherryTheme();
+		ImFontConfig config;
+		ImFont* lato = io.Fonts->AddFontFromFileTTF("fonts/Lato/Lato-Regular.ttf", 18.0f, &config);
+		if (lato) {
+			io.FontDefault = lato;
+		}
+	}
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 	ImGuiStyle& style = ImGui::GetStyle();
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
+
+	ImGuiSDL::Initialize(g_renderer, WIDTH, HEIGHT);
 }
 void cleanup(const sakura::App& app)
 {
@@ -172,17 +188,75 @@ void update(sakura::f32 dt, const sakura::App& app)
 
 	ImGui::NewFrame();
 
-	ImGui::ShowDemoWindow();
+	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
+	bool b_scene_open = true;
+	ImGui::Begin("Scene", &b_scene_open);
+	if (ImGui::TreeNode("Entities")) {
+		static ImGuiTreeNodeFlags base_flags =
+		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+		static int selection_mask = (1 << 2);
+		for (int i = 0; i < 6; i++) {
+			ImGuiTreeNodeFlags node_flags = base_flags;
+			if (i < 3) {
+				if (ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, "Entity %d", i)) {
+					bool is_selected = (selection_mask & (1 << i)) != 0;
+					if (ImGui::Selectable("Leaf", is_selected, ImGuiSelectableFlags_SpanAllColumns)) {
+						selection_mask = 1 << i;
+					}
+					ImGui::TreePop();
+				}
+			} else {
+				bool is_selected = (selection_mask & (1 << i)) != 0;
+				char buf[256];
+				sprintf_s(buf, "Entity %d", i);
+				if (ImGui::Selectable(buf, is_selected, ImGuiSelectableFlags_SpanAllColumns)) {
+					selection_mask = 1 << i;
+				}
+			}
+		}
+		ImGui::TreePop();
+	}
+	ImGui::End();
+
+	bool b_asset_viewer_open = true;
+	ImGui::Begin("Assets", &b_asset_viewer_open);
+	ImGui::End();
+
+	bool b_inspector_open = true;
+	ImGui::Begin("Inspector", &b_inspector_open);
+	ImGui::End();
+
+	bool b_game_scene_open = true;
+	ImGui::Begin("Game", &b_game_scene_open);
+	{
+		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+
+		vMin.x += ImGui::GetWindowPos().x;
+		vMin.y += ImGui::GetWindowPos().y;
+		vMax.x += ImGui::GetWindowPos().x;
+		vMax.y += ImGui::GetWindowPos().y;
+		ImGui::Image(g_scene_texture, ImVec2(vMax.x - vMin.x, vMax.y - vMin.y));
+	}
+	ImGui::End();
+
+	bool b_demo_window_open = false;
+	//ImGui::ShowDemoWindow(&b_demo_window_open);
 }
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
 	auto render_system = [](sakura::ecs::ECS& ecs_instance, float delta_time, float interpolator,
 									SDL_Renderer* renderer) {
+		// Render normal scene
+		SDL_SetRenderTarget(renderer, g_scene_texture);
 #define SAKURA_RGB 255, 183, 197
 		SDL_SetRenderDrawColor(renderer, SAKURA_RGB, SDL_ALPHA_OPAQUE);
 #undef SAKURA_RGB
 		SDL_RenderClear(renderer);
 
+		// Render imgui
+		SDL_SetRenderTarget(renderer, NULL);
 		ImGui::Render();
 		ImGuiSDL::Render(ImGui::GetDrawData());
 
@@ -209,6 +283,7 @@ int main(int argc, char* argv[])
 							.set_title("Sakura Editor")
 							.set_width(WIDTH)
 							.set_height(HEIGHT)
+							.set_resizable(true)
 							.set_target_frame_rate(60.0f)
 							.set_init_callback(init)
 							.set_cleanup_callback(cleanup)

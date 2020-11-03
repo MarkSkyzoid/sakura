@@ -20,10 +20,11 @@ namespace sakura {
 		const char* title = DEFAULT_TITLE;
 		i32 width = DEFAULT_WIDTH;
 		i32 height = DEFAULT_HEIGHT;
+		bool resizable = false;
 		f32 target_frame_rate = DEFAULT_FRAME_RATE;
 
 		using InitCleanupCallbackType = void (*)(const App& app);
-		using NativeMessagePumpCallback = void (*)(void* data);  /* #SK_TODO: DELETE */
+		using NativeMessagePumpCallback = void (*)(void* data); /* #SK_TODO: DELETE */
 		using UpdateCallbackType = void (*)(f32 dt, const App& app);
 		using RenderCallbackType = void (*)(f32 dt, f32 frame_interpolator, const App& app);
 		InitCleanupCallbackType init_callback = nullptr;
@@ -89,6 +90,11 @@ namespace sakura {
 		Builder& set_height(i32 height)
 		{
 			config_.height = height;
+			return *this;
+		}
+		Builder& set_resizable(bool resizable)
+		{
+			config_.resizable = resizable;
 			return *this;
 		}
 		Builder& set_target_frame_rate(f32 frame_rate)

@@ -10,6 +10,7 @@ namespace sakura {
 		const char* title;
 		i32 width;
 		i32 height;
+		bool resizable;
 
 		std::function<void(void)> exit_callback;
 	};

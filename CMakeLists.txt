@@ -16,3 +16,5 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT s
 add_subdirectory(src/sakura)
 add_subdirectory(src/editor)
 add_subdirectory(src/examples)
+
+set_property(TARGET sakura_editor PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets")

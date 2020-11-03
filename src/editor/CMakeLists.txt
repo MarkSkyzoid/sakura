@@ -14,6 +14,12 @@ include_directories(${sakura_SOURCE_DIR})
 include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
 
 source_group(imgui FILES
+	"${sakura_SOURCE_DIR}/../ext/imgui/imconfig.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imgui_internal.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imstb_rectpack.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imstb_textedit.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/imstb_truetype.h"
+
 	"${sakura_SOURCE_DIR}/../ext/imgui/imgui.h"
 	"${sakura_SOURCE_DIR}/../ext/imgui/imgui.cpp"
 	"${sakura_SOURCE_DIR}/../ext/imgui/imgui_demo.cpp"
