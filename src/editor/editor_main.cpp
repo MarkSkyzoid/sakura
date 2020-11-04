@@ -4,11 +4,12 @@
 
 #include "../game_lib/game.hpp"
 
-#include "../ext/imgui/imgui.h"
+#include "imgui.h"
 #include "../ext/imgui_sdl/imgui_sdl.h"
 #include "backends/imgui_impl_sdl.h"
 
-#include "widgets/log_window.hpp"
+#include "widgets/widgets.hpp"
+#include "imgui_internal.h"
 
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
@@ -16,17 +17,19 @@ constexpr sakura::i32 HEIGHT = 768;
 SDL_Renderer* g_renderer = nullptr;
 SDL_Texture* g_scene_texture = nullptr;
 
-struct Widgets
+static sakura::editor::Widgets g_widgets;
+
+enum class PlayState
 {
-	sakura::editor::widgets::LogWindow log_window;
-	static void log_callback(void* user_data, const sakura::logging::Message& message)
-	{
-		using namespace sakura::editor::widgets;
-		LogWindow* log_window = static_cast<LogWindow*>(user_data);
-		log_window->AddLog("[%s] %s\n", sakura::logging::get_verbosity_name(message.verbosity), message.message);
-	}
+	Stopped = 0,
+	Paused,
+	Playing,
+	Count
 };
-static Widgets g_widgets;
+
+PlayState g_play_state = PlayState::Playing;
+
+sakura::Clock g_editor_clock;
 
 void init(const sakura::App& app)
 {
@@ -39,8 +42,23 @@ void init(const sakura::App& app)
 	SDL_CreateTexture(g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIDTH, HEIGHT);
 
 	// Widgets
-	sakura::logging::add_callback("editor_log_window", Widgets::log_callback, &g_widgets.log_window,
-											sakura::logging::NamedVerbosity::Verbosity_MAX);
+	sakura::logging::add_callback("editor_log_window", sakura::editor::Widgets::log_callback,
+											&g_widgets.log_window, sakura::logging::NamedVerbosity::Verbosity_MAX);
+
+	g_editor_clock.start_with_time_now();
+
+	g_widgets.toolbar.play_press_callback = []() {
+		g_play_state = PlayState::Playing;
+		g_editor_clock.set_is_paused(false);
+	};
+	g_widgets.toolbar.pause_press_callback = []() {
+		g_play_state = PlayState::Paused;
+		g_editor_clock.set_is_paused(true);
+	};
+	g_widgets.toolbar.stop_press_callback = []() {
+		g_play_state = PlayState::Stopped;
+		g_editor_clock.set_is_paused(true);
+	};
 
 	// Imgui
 	ImGui::CreateContext();
@@ -118,7 +136,9 @@ void cleanup(const sakura::App& app)
 }
 void fixed_update(sakura::f32 dt, const sakura::App& app)
 {
-	sakura::game_lib::fixed_update(dt, app);
+	if (g_play_state == PlayState::Playing) {
+		sakura::game_lib::fixed_update(dt, app);
+	}
 }
 
 void ImGui_UpdateMousePosAndButtons()
@@ -136,16 +156,83 @@ void ImGui_UpdateMousePosAndButtons()
 	// SDL 2.0.3 and before: single-viewport only
 	io.MousePos = ImVec2((float)mouse_x_local, (float)mouse_y_local);
 }
+
+float menu_bar_height = 0;
+ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
+{
+	return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
+}
+ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs)
+{
+	return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y);
+}
+
+void DockSpaceUI(float toolbar_size)
+{
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos + ImVec2(0, toolbar_size));
+	ImGui::SetNextWindowSize(viewport->Size - ImVec2(0, toolbar_size));
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGuiWindowFlags window_flags = 0 | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking |
+											  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+											  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+											  ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::Begin("Master DockSpace", NULL, window_flags);
+	ImGuiID dock_main = ImGui::GetID("MyDockspace");
+
+	// Save off menu bar height for later.
+	menu_bar_height = ImGui::GetCurrentWindow()->MenuBarHeight();
+
+	ImGui::DockSpace(dock_main);
+	ImGui::End();
+	ImGui::PopStyleVar(3);
+}
+
+void MenuBarUI()
+{
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu("File")) {
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Edit")) {
+			if (ImGui::MenuItem("Undo", "CTRL+Z")) {
+			}
+			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {
+			} // Disabled item
+			ImGui::Separator();
+			if (ImGui::MenuItem("Cut", "CTRL+X")) {
+			}
+			if (ImGui::MenuItem("Copy", "CTRL+C")) {
+			}
+			if (ImGui::MenuItem("Paste", "CTRL+V")) {
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+}
+
 void update(sakura::f32 dt, const sakura::App& app)
 {
-	sakura::game_lib::update(dt, app);
+	if (g_play_state == PlayState::Playing) {
+		auto editor_dt = g_editor_clock.delta_time_seconds();
+		sakura::game_lib::update(editor_dt, app);
+	}
+	g_editor_clock.update(dt);
 
 	ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(app.native_window_handle()));
 	ImGui_UpdateMousePosAndButtons();
 
 	ImGui::NewFrame();
 
-	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+	// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+	DockSpaceUI(g_widgets.toolbar.size);
+	MenuBarUI();
+	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
 
 	bool b_scene_open = true;
 	ImGui::Begin("Scene", &b_scene_open);
@@ -203,16 +290,17 @@ void update(sakura::f32 dt, const sakura::App& app)
 	bool log_window_opened = true;
 	g_widgets.log_window.Draw("Log", &log_window_opened);
 
-	// bool b_demo_window_open = false;
-	// ImGui::ShowDemoWindow(&b_demo_window_open);
+	bool b_demo_window_open = false;
+	ImGui::ShowDemoWindow(&b_demo_window_open);
 }
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
 	auto render_system = [&app](float delta_time, float interpolator, SDL_Renderer* renderer) {
 		// Render game scene
-		SDL_SetRenderTarget(renderer, g_scene_texture);
-
-		sakura::game_lib::render(delta_time, interpolator, app, renderer);
+		if (g_play_state == PlayState::Playing) {
+			SDL_SetRenderTarget(renderer, g_scene_texture);
+			sakura::game_lib::render(delta_time, interpolator, app, renderer);
+		}
 
 		// Render imgui
 		SDL_SetRenderTarget(renderer, NULL);
@@ -222,7 +310,8 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 		SDL_RenderPresent(renderer);
 	};
 
-	render_system(dt, frame_interpolator, g_renderer);
+	auto editor_dt = g_editor_clock.delta_time_seconds();
+	render_system(editor_dt, frame_interpolator, g_renderer);
 }
 
 void native_message_pump(void* data)
