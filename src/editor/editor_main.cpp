@@ -1,14 +1,14 @@
 #include "app.hpp"
-#include "ecs/ecs.hpp"
 #include "log/log.hpp"
 #include "SDL.h"
 
-#include <array>
-#include <algorithm>
+#include "../game_lib/game.hpp"
+
 #include "../ext/imgui/imgui.h"
 #include "../ext/imgui_sdl/imgui_sdl.h"
 #include "backends/imgui_impl_sdl.h"
-#include "../game_lib/game.hpp"
+
+#include "widgets/log_window.hpp"
 
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
@@ -16,16 +16,31 @@ constexpr sakura::i32 HEIGHT = 768;
 SDL_Renderer* g_renderer = nullptr;
 SDL_Texture* g_scene_texture = nullptr;
 
-static sakura::ecs::ECS editor_ecs {};
+struct Widgets
+{
+	sakura::editor::widgets::LogWindow log_window;
+	static void log_callback(void* user_data, const sakura::logging::Message& message)
+	{
+		using namespace sakura::editor::widgets;
+		LogWindow* log_window = static_cast<LogWindow*>(user_data);
+		log_window->AddLog("[%s] %s\n", sakura::logging::get_verbosity_name(message.verbosity), message.message);
+	}
+};
+static Widgets g_widgets;
 
 void init(const sakura::App& app)
 {
+	// #SK_TODO: Delete when we have a rendering backend!
 	g_renderer =
 	SDL_CreateRenderer((SDL_Window*)sakura::platform::get_native_window_handle(app.platform_handle()),
 							 -1, SDL_RENDERER_SOFTWARE);
 
 	g_scene_texture =
 	SDL_CreateTexture(g_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIDTH, HEIGHT);
+
+	// Widgets
+	sakura::logging::add_callback("editor_log_window", Widgets::log_callback, &g_widgets.log_window,
+											sakura::logging::NamedVerbosity::Verbosity_MAX);
 
 	// Imgui
 	ImGui::CreateContext();
@@ -34,7 +49,7 @@ void init(const sakura::App& app)
 	(void)io;
 
 	// Config
-	io.IniFilename = "config/editor/imgui.ini";
+	io.IniFilename = "assets/config/editor/imgui.ini";
 
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -75,7 +90,7 @@ void init(const sakura::App& app)
 	// Setup Dear ImGui style
 	{
 		ImFontConfig config;
-		ImFont* lato = io.Fonts->AddFontFromFileTTF("fonts/Lato/Lato-Regular.ttf", 15.0f, &config);
+		ImFont* lato = io.Fonts->AddFontFromFileTTF("assets/fonts/Lato/Lato-Regular.ttf", 15.0f, &config);
 		if (lato) {
 			io.FontDefault = lato;
 		}
@@ -185,13 +200,15 @@ void update(sakura::f32 dt, const sakura::App& app)
 	}
 	ImGui::End();
 
+	bool log_window_opened = true;
+	g_widgets.log_window.Draw("Log", &log_window_opened);
+
 	// bool b_demo_window_open = false;
 	// ImGui::ShowDemoWindow(&b_demo_window_open);
 }
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
-	auto render_system = [&app](sakura::ecs::ECS& ecs_instance, float delta_time, float interpolator,
-										 SDL_Renderer* renderer) {
+	auto render_system = [&app](float delta_time, float interpolator, SDL_Renderer* renderer) {
 		// Render game scene
 		SDL_SetRenderTarget(renderer, g_scene_texture);
 
@@ -205,7 +222,7 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 		SDL_RenderPresent(renderer);
 	};
 
-	render_system(editor_ecs, dt, frame_interpolator, g_renderer);
+	render_system(dt, frame_interpolator, g_renderer);
 }
 
 void native_message_pump(void* data)

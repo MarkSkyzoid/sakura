@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 namespace sakura {
 	namespace ser {

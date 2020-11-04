@@ -23,7 +23,7 @@ void sakura::App::run()
 	init();
 
 	// Run
-	const f64 fixed_dt = 1.0 / config_.target_frame_rate;
+	const f32 fixed_dt = 1.0f / config_.target_frame_rate;
 	f32 dt_accumulator = 0.0f;
 	while (!is_exiting_) {
 		Duration frame_duration;
@@ -62,24 +62,41 @@ void sakura::App::set_window_title(const char* title)
 	platform::set_window_title(platform_, title);
 }
 
-void* sakura::App::native_window_handle() const { return platform::get_native_window_handle(platform_); }
+void* sakura::App::native_window_handle() const
+{
+	return platform::get_native_window_handle(platform_);
+}
 
 void sakura::App::init()
 {
 	is_running_ = true;
 
+	// Logging system
+	{
+		constexpr size_t buff_length = 256;
+		char suggested_log_path[buff_length];
+		logging::suggest_log_path(config_.title, suggested_log_path, buff_length);
+		char log_path[buff_length];
+		sprintf_s(log_path, "temp/logs/%s", suggested_log_path);
+		logging::add_file(log_path, logging::FileMode::Truncate, logging::NamedVerbosity::Verbosity_MAX);
+	}
+
 	// Platform system
-	auto platform_config = platform_config_from_app_config(config_);
-	// This is fine because platform is owned by App. Platform won't outlive App.
-	platform_config.exit_callback = [this]() { this->request_exit(); };
-	platform_ = platform::create_platform(platform_config);
-	platform::init(platform_);
+	{
+		auto platform_config = platform_config_from_app_config(config_);
+		// This is fine because platform is owned by App. Platform won't outlive App.
+		platform_config.exit_callback = [this]() { this->request_exit(); };
+		platform_ = platform::create_platform(platform_config);
+		platform::init(platform_);
+	}
 
 	// Main clock is the main loop clock.
 	// This clock is not meant to be messed with (e.g. with time scale) as it's the true clock.
 	// You can have your own clocks to use, relative to this clock, for updating entities.
-	main_clock_ = Clock { config_.target_frame_rate };
-	main_clock_.start_from(0.0f);
+	{
+		main_clock_ = Clock { config_.target_frame_rate };
+		main_clock_.start_from(0.0f);
+	}
 
 	// At the very end call custom app's init callback.
 	// This always needs to be the last thing here.

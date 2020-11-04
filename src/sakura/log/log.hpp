@@ -1,7 +1,5 @@
 #pragma once
-
-#include <iostream>
-#include <stdio.h>
+#include "../../ext/loguru/loguru.hpp"
 
 #include "type_aliases.hpp"
 
@@ -15,23 +13,27 @@
 	} else {                                                                                    \
 		char buf[sakura::logging::MESSAGE_SIZE];                                                 \
 		sprintf_s(buf, sakura::logging::MESSAGE_SIZE, msg, __VA_ARGS__);                         \
+		logging::log_error(msg, __VA_ARGS__);                                                    \
 		platform::report_assert(__FILE__, __LINE__, buf, platform::AssertIgnoreMode::CanIgnore); \
 	}
 #define SKR_ASSERT(cond)                                                                         \
 	if (cond) {                                                                                   \
 	} else {                                                                                      \
+		logging::log_error(#cond);                                                                 \
 		platform::report_assert(__FILE__, __LINE__, #cond, platform::AssertIgnoreMode::CanIgnore); \
 	}
-#define SKR_ASSERT_FATAL_M(cond, msg, ...)                                                     \
-	if (cond) {                                                                                 \
-	} else {                                                                                    \
-		char buf[sakura::logging::MESSAGE_SIZE];                                                 \
-		sprintf_s(buf, sakura::logging::MESSAGE_SIZE, msg, __VA_ARGS__);                         \
+#define SKR_ASSERT_FATAL_M(cond, msg, ...)                                                        \
+	if (cond) {                                                                                    \
+	} else {                                                                                       \
+		char buf[sakura::logging::MESSAGE_SIZE];                                                    \
+		sprintf_s(buf, sakura::logging::MESSAGE_SIZE, msg, __VA_ARGS__);                            \
+		logging::log_error(msg, __VA_ARGS__);                                                       \
 		platform::report_assert(__FILE__, __LINE__, buf, platform::AssertIgnoreMode::CannotIgnore); \
 	}
-#define SKR_ASSERT_FATAL(cond)                                                                   \
-	if (cond) {                                                                                   \
-	} else {                                                                                      \
+#define SKR_ASSERT_FATAL(cond)                                                                      \
+	if (cond) {                                                                                      \
+	} else {                                                                                         \
+		logging::log_error(#cond);                                                                    \
 		platform::report_assert(__FILE__, __LINE__, #cond, platform::AssertIgnoreMode::CannotIgnore); \
 	}
 #define SKR_ASSERT_FAST(cond) \
@@ -49,38 +51,47 @@ namespace sakura {
 	namespace logging {
 		constexpr size_t MESSAGE_SIZE = 256;
 
-		enum class Verbosity : u8
+		using Verbosity = loguru::Verbosity;
+		using NamedVerbosity = loguru::NamedVerbosity;
+		using Message = loguru::Message;
+		using LogHandler = loguru::log_handler_t; // void (*LogHandler)(void* user_data, const Message& message);
+		using FileMode = loguru::FileMode;
+
+		bool add_file(const char* path, FileMode mode, Verbosity verbosity);
+		void add_callback(const char* id, LogHandler callback, void* user_data, Verbosity verbosity);
+		void suggest_log_path(const char* prefix, char* buff, unsigned buff_size);
+		const char* get_verbosity_name(Verbosity verbosity);
+
+		// Normal log functions
+		template<typename... Args> void log_info(const char* fmt, Args... args)
 		{
-			Info = 0,
-			Warning,
-			Critical,
-			Count
-		};
-
-		namespace detail {
-			template<typename... Args> void log(Verbosity verbosity, const char* msg, Args... args)
-			{
-				char buf[MESSAGE_SIZE];
-				sprintf_s(buf, MESSAGE_SIZE, msg, args...);
-				log(verbosity, buf);
-			}
-
-			void log(Verbosity verbosity, const char* msg);
-		} // namespace detail
-
-		template<typename... Args> void log_info(const char* msg, Args... args)
-		{
-			detail::log(Verbosity::Info, msg, args...);
+			LOG_F(INFO, fmt, args...);
 		}
 
-		template<typename... Args> void log_warning(const char* msg, Args... args)
+		template<typename... Args> void log_warning(const char* fmt, Args... args)
 		{
-			detail::log(Verbosity::Warning, msg, args...);
+			LOG_F(WARNING, fmt, args...);
 		}
 
-		template<typename... Args> void log_critical(const char* msg, Args... args)
+		template<typename... Args> void log_error(const char* fmt, Args... args)
 		{
-			detail::log(Verbosity::Critical, msg, args...);
+			LOG_F(ERROR, fmt, args...);
+		}
+
+		// Debug only log functions
+		template<typename... Args> void dlog_info(const char* fmt, Args... args)
+		{
+			DLOG_F(INFO, fmt, args...);
+		}
+
+		template<typename... Args> void dlog_warning(const char* fmt, Args... args)
+		{
+			DLOG_F(WARNING, fmt, args...);
+		}
+
+		template<typename... Args> void dlog_error(const char* fmt, Args... args)
+		{
+			DLOG_F(ERROR, fmt, args...);
 		}
 	} // namespace logging
 } // namespace sakura
