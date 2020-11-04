@@ -90,7 +90,7 @@ void init(const sakura::App& app)
 	// Setup Dear ImGui style
 	{
 		ImFontConfig config;
-		ImFont* lato = io.Fonts->AddFontFromFileTTF("assets/fonts/Lato/Lato-Regular.ttf", 15.0f, &config);
+		ImFont* lato = io.Fonts->AddFontFromFileTTF("assets/fonts/Lato/Lato-Regular.ttf", 16.0f, &config);
 		if (lato) {
 			io.FontDefault = lato;
 		}
