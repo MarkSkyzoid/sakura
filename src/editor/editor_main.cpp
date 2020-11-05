@@ -141,6 +141,8 @@ void fixed_update(sakura::f32 dt, const sakura::App& app)
 {
 	if (g_play_state == PlayState::Playing) {
 		sakura::game_lib::fixed_update(dt, app, g_editor_scene.ecs);
+	} else {
+		sakura::game_lib::fixed_update(0.0f, app, g_editor_scene.ecs);
 	}
 }
 
@@ -221,10 +223,8 @@ void MenuBarUI()
 
 void update(sakura::f32 dt, const sakura::App& app)
 {
-	if (g_play_state == PlayState::Playing) {
-		auto editor_dt = g_editor_clock.delta_time_seconds();
-		sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
-	}
+	auto editor_dt = g_editor_clock.delta_time_seconds();
+	sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
 	g_editor_clock.update(dt);
 
 	ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(app.native_window_handle()));
@@ -272,11 +272,8 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 {
 	auto render_system = [&app](float delta_time, float interpolator, SDL_Renderer* renderer) {
 		// Render game scene
-		if (g_play_state == PlayState::Playing) {
-			SDL_SetRenderTarget(renderer, g_scene_texture);
-			sakura::game_lib::render(delta_time, interpolator, app, g_editor_scene.ecs, renderer);
-			sakura::game_lib::render(delta_time, interpolator, app, g_editor_scene.ecs, renderer);
-		}
+		SDL_SetRenderTarget(renderer, g_scene_texture);
+		sakura::game_lib::render(delta_time, interpolator, app, g_editor_scene.ecs, renderer);
 
 		// Render imgui
 		SDL_SetRenderTarget(renderer, NULL);
