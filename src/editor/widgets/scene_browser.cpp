@@ -9,11 +9,11 @@ namespace sakura::ser {
 	{
 		inline void visit(ImguiSceneWalker& walker, sakura::ecs::Entity& entity, sakura::ecs::ECS& ecs_instance)
 		{
-			const bool selected = walker.selected_index == entity.get_index() && entity.is_valid();
+			const bool selected = entity.is_valid() && walker.selected_entity == entity;
 			char label[256];
 			sprintf_s(label, "Entity %d", entity.get_index());
 			if (ImGui::Selectable(label, selected)) {
-				walker.selected_index = entity.get_index();
+				walker.selected_entity = entity;
 			}
 		}
 

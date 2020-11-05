@@ -4,7 +4,7 @@
 namespace sakura::ser {
 	struct ImguiSceneWalker
 	{
-		sakura::ecs::EntityIndex selected_index = sakura::ecs::Entity::INVALID_INDEX;
+		sakura::ecs::Entity selected_entity = sakura::ecs::Entity::Invalid;
 	};
 } // namespace sakura::ser
 
