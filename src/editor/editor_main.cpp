@@ -238,13 +238,12 @@ void update(sakura::f32 dt, const sakura::App& app)
 	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
 
 	g_widgets.scene_browser.draw(g_editor_scene);
+	g_widgets.entity_inspector.draw(g_editor_scene, g_widgets.scene_browser.get_selected_entity(), sakura::game_lib::visit_components<sakura::ser::ImGuiEntityInspectorWalker>);
 	bool b_asset_viewer_open = true;
 	ImGui::Begin("Assets", &b_asset_viewer_open);
 	ImGui::End();
 
-	bool b_inspector_open = true;
-	ImGui::Begin("Inspector", &b_inspector_open);
-	ImGui::End();
+	
 
 	bool b_game_scene_open = true;
 	char game_window_title_buf[256];

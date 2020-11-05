@@ -1,9 +1,10 @@
 #pragma once
-
-#include "log_window.hpp"
-#include "toolbar.hpp"
-#include "scene_browser.hpp"
 #include "log/log.hpp"
+
+#include "entity_inspector.hpp"
+#include "log_window.hpp"
+#include "scene_browser.hpp"
+#include "toolbar.hpp"
 
 namespace sakura::editor {
 	struct Widgets
@@ -11,6 +12,7 @@ namespace sakura::editor {
 		widgets::LogWindow log_window;
 		widgets::Toolbar toolbar;
 		widgets::SceneBrowser scene_browser;
+		widgets::EntityInspector entity_inspector;
 
 		static void log_callback(void* user_data, const sakura::logging::Message& message)
 		{

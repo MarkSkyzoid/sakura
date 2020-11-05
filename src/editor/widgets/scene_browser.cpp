@@ -1,29 +1,29 @@
 #include "scene_browser.hpp"
+
 #include "../ext/imgui/imgui.h"
 #include "serialization/serialization.hpp"
-#include "ecs/ecs.hpp"
 
 // Custom serialization for ImGui
 namespace sakura::ser {
+	inline void visit(ImguiSceneWalker& walker, sakura::ecs::Entity& entity, sakura::ecs::ECS& ecs_instance)
+	{
+		const bool selected = entity.is_valid() && walker.selected_entity == entity;
+		char label[256];
+		sprintf_s(label, "Entity %d", entity.get_index());
+		if (ImGui::Selectable(label, selected)) {
+			walker.selected_entity = entity;
+		}
+	}
+
+	inline void visit(ImguiSceneWalker& walker, sakura::editor::Scene& scene)
+	{
+		for (sakura::ecs::Entity entity : sakura::ecs::EntityIterator<>(scene.ecs)) {
+			visit(walker, entity, scene.ecs);
+		}
+	}
+
 	template<> struct StructVisitor<ImguiSceneWalker>
 	{
-		inline void visit(ImguiSceneWalker& walker, sakura::ecs::Entity& entity, sakura::ecs::ECS& ecs_instance)
-		{
-			const bool selected = entity.is_valid() && walker.selected_entity == entity;
-			char label[256];
-			sprintf_s(label, "Entity %d", entity.get_index());
-			if (ImGui::Selectable(label, selected)) {
-				walker.selected_entity = entity;
-			}
-		}
-
-		inline void visit(ImguiSceneWalker& walker, sakura::ecs::ECS& ecs_instance)
-		{
-			for (sakura::ecs::Entity entity : sakura::ecs::EntityIterator<>(ecs_instance)) {
-				visit(walker, entity, ecs_instance);
-			}
-		}
-
 		StructVisitor(const char* name, ImguiSceneWalker& walker) : name_(name), imgui_walker_(walker)
 		{}
 		~StructVisitor() {}
@@ -45,4 +45,9 @@ void sakura::editor::widgets::SceneBrowser::draw(sakura::editor::Scene& scene)
 	ImGui::Begin(name_, &window_open_);
 	sakura::ser::visit(ser_imgui_scene_walker_, scene);
 	ImGui::End();
+}
+
+sakura::ecs::Entity sakura::editor::widgets::SceneBrowser::get_selected_entity() const
+{
+	return ser_imgui_scene_walker_.selected_entity;
 }

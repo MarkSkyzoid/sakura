@@ -16,6 +16,7 @@ namespace sakura::editor::widgets {
 
 		void set_name(const char* name) { name_ = name; }
 		const char* get_name() const { return name_; }
+		sakura::ecs::Entity get_selected_entity() const;
 
 	private:
 		bool window_open_ = true;

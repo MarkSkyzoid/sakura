@@ -11,10 +11,13 @@ namespace sakura {
 		using EntityIndex = lecs::EntityIndex;
 		using EntityGeneration = lecs::EntityGeneration;
 		using ComponentMask = lecs::ComponentMask;
+		using ComponentID = lecs::ComponentID;
+
+		template<typename T>
+		using ComponentArray = lecs::ComponentArray<T>;
+		using IComponentArray = lecs::IComponentArray;
 
 		template<typename... ComponentTypes>
 		using EntityIterator = lecs::EntityIterator<ComponentTypes...>;
 	} // namespace ecs
 } // namespace sakura
-
-SAKURA_STRUCT(sakura::ecs::ECS, );
