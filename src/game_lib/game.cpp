@@ -99,9 +99,7 @@ constexpr float MAX_PARTICLE_VEL = 50.0f;
 constexpr float PARTICLE_ELASTICITY = 1.0f;
 const float2 GRAVITY = float2(0.0f, 1.0f) * 1000.0f; // 10 m/s^2
 
-static sakura::ecs::ECS world_ecs {};
-
-void sakura::game_lib::init(const App& app)
+void sakura::game_lib::init(const App& app, sakura::ecs::ECS& ecs_instance)
 {
 	const auto WIDTH = app.config().width;
 	const auto HEIGHT = app.config().height;
@@ -109,9 +107,9 @@ void sakura::game_lib::init(const App& app)
 	// Make particles
 	srand(app.main_clock().time_cycles());
 	for (auto i = 0; i < NUM_PARTICLES; i++) {
-		auto e = world_ecs.create_entity();
-		world_ecs.add_component_to_entity<Particle>(e);
-		Particle* p = world_ecs.get_component<Particle>(e);
+		auto e = ecs_instance.create_entity();
+		ecs_instance.add_component_to_entity<Particle>(e);
+		Particle* p = ecs_instance.get_component<Particle>(e);
 
 		auto x = PARTICLE_RADIUS + (WIDTH / (float)NUM_PARTICLES) * i;
 		*p = Particle::make({ x + rand_z_to_o() * PARTICLE_RADIUS,
@@ -132,16 +130,16 @@ void sakura::game_lib::init(const App& app)
 	};
 
 	for (auto i = 0; i < NUM_WALLS; i++) {
-		auto e = world_ecs.create_entity();
-		world_ecs.add_component_to_entity<Wall>(e);
-		Wall* w = world_ecs.get_component<Wall>(e);
+		auto e = ecs_instance.create_entity();
+		ecs_instance.add_component_to_entity<Wall>(e);
+		Wall* w = ecs_instance.get_component<Wall>(e);
 		*w = walls[i];
 	}
 }
 
-void sakura::game_lib::cleanup(const App& app) {}
+void sakura::game_lib::cleanup(const App& app, sakura::ecs::ECS& ecs_instance) {}
 
-void sakura::game_lib::fixed_update(f32 dt, const App& app)
+void sakura::game_lib::fixed_update(f32 dt, const App& app, sakura::ecs::ECS& ecs_instance)
 {
 	auto integration_system = [](sakura::ecs::ECS& ecs_instance, float delta_time) {
 		for (sakura::ecs::Entity entity : sakura::ecs::EntityIterator<Particle>(ecs_instance)) {
@@ -205,13 +203,13 @@ void sakura::game_lib::fixed_update(f32 dt, const App& app)
 		}
 	};
 
-	integration_system(world_ecs, dt);
-	collision_system(world_ecs, dt);
+	integration_system(ecs_instance, dt);
+	collision_system(ecs_instance, dt);
 }
 
-void sakura::game_lib::update(f32 dt, const App& app) {}
+void sakura::game_lib::update(f32 dt, const App& app, sakura::ecs::ECS& ecs_instance) {}
 
-void sakura::game_lib::render(f32 dt, f32 frame_interpolator, const App& app, SDL_Renderer* renderer)
+void sakura::game_lib::render(f32 dt, f32 frame_interpolator, const App& app, sakura::ecs::ECS& ecs_instance, SDL_Renderer* renderer)
 {
 	auto render_system = [](sakura::ecs::ECS& ecs_instance, float delta_time, float interpolator,
 									SDL_Renderer* renderer) {
@@ -231,5 +229,5 @@ void sakura::game_lib::render(f32 dt, f32 frame_interpolator, const App& app, SD
 		SDL_RenderPresent(renderer);
 	};
 
-	render_system(world_ecs, dt, frame_interpolator, renderer);
+	render_system(ecs_instance, dt, frame_interpolator, renderer);
 }

@@ -2,12 +2,15 @@
 
 #include "log_window.hpp"
 #include "toolbar.hpp"
+#include "scene_browser.hpp"
+#include "log/log.hpp"
 
 namespace sakura::editor {
 	struct Widgets
 	{
 		widgets::LogWindow log_window;
 		widgets::Toolbar toolbar;
+		widgets::SceneBrowser scene_browser;
 
 		static void log_callback(void* user_data, const sakura::logging::Message& message)
 		{

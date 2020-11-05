@@ -11,12 +11,15 @@
 #include "widgets/widgets.hpp"
 #include "imgui_internal.h"
 
+#include "scene/scene.hpp"
+
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
 
 SDL_Renderer* g_renderer = nullptr;
 SDL_Texture* g_scene_texture = nullptr;
 
+static sakura::editor::Scene g_editor_scene;
 static sakura::editor::Widgets g_widgets;
 
 enum class PlayState
@@ -123,12 +126,12 @@ void init(const sakura::App& app)
 	ImGuiSDL::Initialize(g_renderer, WIDTH, HEIGHT);
 
 	// Init game
-	sakura::game_lib::init(app);
+	sakura::game_lib::init(app, g_editor_scene.ecs);
 }
 void cleanup(const sakura::App& app)
 {
 	// Clean up game first
-	sakura::game_lib::cleanup(app);
+	sakura::game_lib::cleanup(app, g_editor_scene.ecs);
 
 	ImGuiSDL::Deinitialize();
 	SDL_DestroyRenderer(g_renderer);
@@ -137,7 +140,7 @@ void cleanup(const sakura::App& app)
 void fixed_update(sakura::f32 dt, const sakura::App& app)
 {
 	if (g_play_state == PlayState::Playing) {
-		sakura::game_lib::fixed_update(dt, app);
+		sakura::game_lib::fixed_update(dt, app, g_editor_scene.ecs);
 	}
 }
 
@@ -220,7 +223,7 @@ void update(sakura::f32 dt, const sakura::App& app)
 {
 	if (g_play_state == PlayState::Playing) {
 		auto editor_dt = g_editor_clock.delta_time_seconds();
-		sakura::game_lib::update(editor_dt, app);
+		sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
 	}
 	g_editor_clock.update(dt);
 
@@ -234,35 +237,7 @@ void update(sakura::f32 dt, const sakura::App& app)
 	MenuBarUI();
 	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
 
-	bool b_scene_open = true;
-	ImGui::Begin("Scene", &b_scene_open);
-	if (ImGui::TreeNode("Entities")) {
-		static ImGuiTreeNodeFlags base_flags =
-		ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
-		static int selection_mask = (1 << 2);
-		for (int i = 0; i < 6; i++) {
-			ImGuiTreeNodeFlags node_flags = base_flags;
-			if (i < 3) {
-				if (ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, "Entity %d", i)) {
-					bool is_selected = (selection_mask & (1 << i)) != 0;
-					if (ImGui::Selectable("Leaf", is_selected, ImGuiSelectableFlags_SpanAllColumns)) {
-						selection_mask = 1 << i;
-					}
-					ImGui::TreePop();
-				}
-			} else {
-				bool is_selected = (selection_mask & (1 << i)) != 0;
-				char buf[256];
-				sprintf_s(buf, "Entity %d", i);
-				if (ImGui::Selectable(buf, is_selected, ImGuiSelectableFlags_SpanAllColumns)) {
-					selection_mask = 1 << i;
-				}
-			}
-		}
-		ImGui::TreePop();
-	}
-	ImGui::End();
-
+	g_widgets.scene_browser.draw(g_editor_scene);
 	bool b_asset_viewer_open = true;
 	ImGui::Begin("Assets", &b_asset_viewer_open);
 	ImGui::End();
@@ -299,7 +274,8 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 		// Render game scene
 		if (g_play_state == PlayState::Playing) {
 			SDL_SetRenderTarget(renderer, g_scene_texture);
-			sakura::game_lib::render(delta_time, interpolator, app, renderer);
+			sakura::game_lib::render(delta_time, interpolator, app, g_editor_scene.ecs, renderer);
+			sakura::game_lib::render(delta_time, interpolator, app, g_editor_scene.ecs, renderer);
 		}
 
 		// Render imgui
