@@ -49,7 +49,6 @@ namespace sakura {
 	visit<Visitor>(visitor, *(ecs.get_component<ComponentType>(entity))); \
 	}
 
-				DECLARE_COMPONENT(float2);
 				DECLARE_COMPONENT(Particle);
 				DECLARE_COMPONENT(Wall);
 

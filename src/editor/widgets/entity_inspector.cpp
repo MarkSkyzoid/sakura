@@ -1,6 +1,5 @@
 #include "entity_inspector.hpp"
 
-#include "../ext/imgui/imgui.h"
 #include "serialization/serialization.hpp"
 
 

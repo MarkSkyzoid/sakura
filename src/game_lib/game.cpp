@@ -12,6 +12,7 @@
 
 float rand_z_to_o() { return rand() / (RAND_MAX + 1.); }
 float rand_mo_to_o() { return rand_z_to_o() * 2.0f - 1.0f; }
+static int g_num_balls = 0;
 
 int draw_circle(SDL_Renderer* renderer, float x, float y, float radius)
 {
@@ -75,6 +76,7 @@ void sakura::game_lib::init(const App& app, sakura::ecs::ECS& ecs_instance)
 								  { rand_z_to_o() * MAX_PARTICLE_VEL, rand_z_to_o() * MAX_PARTICLE_VEL });
 		p->pos.x = std::max(0.0f, std::min(p->pos.x, WIDTH - PARTICLE_RADIUS));
 		p->pos.y = std::max(0.0f, std::min(p->pos.y, HEIGHT - PARTICLE_RADIUS));
+		g_num_balls++;
 	}
 
 	// Make walls
@@ -131,11 +133,12 @@ void sakura::game_lib::fixed_update(f32 dt, const App& app, sakura::ecs::ECS& ec
 					if (p_dot_norm + w.d < 0.0f) {
 						p = bounce_off(w.n, PARTICLE_ELASTICITY, -(p_dot_norm + w.d), p);
 
-						if (rand_z_to_o() > 0.9) {
+						if (rand_z_to_o() > 0.9 && g_num_balls < 30) {
 							auto e = ecs_instance.create_entity();
 							ecs_instance.add_component_to_entity<Particle>(e);
 							Particle* new_p = ecs_instance.get_component<Particle>(e);
 							*new_p = Particle::make(p.pos, p.vel * -1.0f);
+							g_num_balls++;
 						}
 					}
 				}
