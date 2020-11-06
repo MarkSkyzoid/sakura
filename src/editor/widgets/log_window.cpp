@@ -2,13 +2,13 @@
 
 namespace sakura::editor::widgets {
 
-	void LogWindow::Clear()
+	void LogWindow::clear()
 	{
 		Buf.clear();
 		LineOffsets.clear();
 	}
 
-	void LogWindow::AddLog(const char* fmt, ...) IM_FMTLIST(2)
+	void LogWindow::add_log(const char* fmt, ...) IM_FMTLIST(2)
 	{
 		int old_size = Buf.size();
 		va_list args;
@@ -21,12 +21,12 @@ namespace sakura::editor::widgets {
 		ScrollToBottom = true;
 	}
 
-	void LogWindow::Draw(const char* title, bool* p_opened /*= NULL*/)
+	void LogWindow::draw(const char* title, bool* p_opened /*= NULL*/)
 	{
 		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
 		ImGui::Begin(title, p_opened);
 		if (ImGui::Button("Clear"))
-			Clear();
+			clear();
 		ImGui::SameLine();
 		bool copy = ImGui::Button("Copy");
 		ImGui::SameLine();

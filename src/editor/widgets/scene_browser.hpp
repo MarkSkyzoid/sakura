@@ -12,15 +12,11 @@ namespace sakura::editor::widgets {
 	class SceneBrowser
 	{
 	public:
-		void draw(sakura::editor::Scene& scene);
-
-		void set_name(const char* name) { name_ = name; }
-		const char* get_name() const { return name_; }
+		void draw(const char* title, sakura::editor::Scene& scene);
 		sakura::ecs::Entity get_selected_entity() const;
 
 	private:
 		bool window_open_ = true;
-		const char* name_ = "Scene";
 		sakura::ser::ImguiSceneWalker ser_imgui_scene_walker_;
 	};
 

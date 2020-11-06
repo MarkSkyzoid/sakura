@@ -18,7 +18,7 @@ namespace sakura::editor {
 		{
 			using namespace widgets;
 			LogWindow* log_window = static_cast<LogWindow*>(user_data);
-			log_window->AddLog("[%s] %s\n", sakura::logging::get_verbosity_name(message.verbosity),
+			log_window->add_log("[%s] %s\n", sakura::logging::get_verbosity_name(message.verbosity),
 									 message.message);
 		}
 	};

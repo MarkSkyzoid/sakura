@@ -40,9 +40,9 @@ namespace sakura::ser {
 	};
 } // namespace sakura::ser
 
-void sakura::editor::widgets::SceneBrowser::draw(sakura::editor::Scene& scene)
+void sakura::editor::widgets::SceneBrowser::draw(const char* title, sakura::editor::Scene& scene)
 {
-	ImGui::Begin(name_, &window_open_);
+	ImGui::Begin(title, &window_open_);
 	sakura::ser::visit(ser_imgui_scene_walker_, scene);
 	ImGui::End();
 }

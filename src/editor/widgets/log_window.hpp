@@ -5,9 +5,9 @@
 namespace sakura::editor::widgets {
 	struct LogWindow
 	{
-		void Clear();
-		void AddLog(const char* fmt, ...) IM_FMTLIST(2);
-		void Draw(const char* title, bool* p_opened = NULL);
+		void clear();
+		void add_log(const char* fmt, ...) IM_FMTLIST(2);
+		void draw(const char* title, bool* p_opened = NULL);
 
 	private:
 		ImGuiTextBuffer Buf;

@@ -200,15 +200,12 @@ namespace sakura::editor::widgets {
 	class EntityInspector
 	{
 	public:
-		void draw(sakura::editor::Scene& scene,
+		void draw(const char* title,
+					 sakura::editor::Scene& scene,
 					 const sakura::ecs::Entity& entity,
 					 sakura::ser::ImGuiEntityInspectorWalker::VisitComponentsFn visit_components_callback);
 
-		void set_name(const char* name) { name_ = name; }
-		const char* get_name() const { return name_; }
-
 	private:
 		bool window_open_ = true;
-		const char* name_ = "Inspector";
 	};
 } // namespace sakura::editor::widgets

@@ -36,6 +36,110 @@ PlayState g_play_state = PlayState::Playing;
 
 sakura::Clock g_editor_clock;
 
+inline void SetupImGuiStyle(bool bStyleDark_, float alpha_)
+{
+	constexpr auto ColorFromBytes = [](uint8_t r, uint8_t g, uint8_t b) {
+		return ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f);
+	};
+
+	auto& style = ImGui::GetStyle();
+	ImVec4* colors = style.Colors;
+
+	const ImVec4 bgColor = ColorFromBytes(37, 37, 38);
+	const ImVec4 lightBgColor = ColorFromBytes(82, 82, 85);
+	const ImVec4 veryLightBgColor = ColorFromBytes(90, 90, 95);
+
+	const ImVec4 panelColor = ColorFromBytes(51, 51, 55);
+	const ImVec4 panelHoverColor = ColorFromBytes(29, 151, 236);
+	const ImVec4 panelActiveColor = ColorFromBytes(0, 119, 200);
+
+	const ImVec4 textColor = ColorFromBytes(255, 255, 255);
+	const ImVec4 textDisabledColor = ColorFromBytes(151, 151, 151);
+	const ImVec4 borderColor = ColorFromBytes(78, 78, 78);
+
+	colors[ImGuiCol_Text] = textColor;
+	colors[ImGuiCol_TextDisabled] = textDisabledColor;
+	colors[ImGuiCol_TextSelectedBg] = panelActiveColor;
+	colors[ImGuiCol_WindowBg] = bgColor;
+	colors[ImGuiCol_ChildBg] = bgColor;
+	colors[ImGuiCol_PopupBg] = bgColor;
+	colors[ImGuiCol_Border] = borderColor;
+	colors[ImGuiCol_BorderShadow] = borderColor;
+	colors[ImGuiCol_FrameBg] = panelColor;
+	colors[ImGuiCol_FrameBgHovered] = panelHoverColor;
+	colors[ImGuiCol_FrameBgActive] = panelActiveColor;
+	colors[ImGuiCol_TitleBg] = bgColor;
+	colors[ImGuiCol_TitleBgActive] = bgColor;
+	colors[ImGuiCol_TitleBgCollapsed] = bgColor;
+	colors[ImGuiCol_MenuBarBg] = panelColor;
+	colors[ImGuiCol_ScrollbarBg] = panelColor;
+	colors[ImGuiCol_ScrollbarGrab] = lightBgColor;
+	colors[ImGuiCol_ScrollbarGrabHovered] = veryLightBgColor;
+	colors[ImGuiCol_ScrollbarGrabActive] = veryLightBgColor;
+	colors[ImGuiCol_CheckMark] = panelActiveColor;
+	colors[ImGuiCol_SliderGrab] = panelHoverColor;
+	colors[ImGuiCol_SliderGrabActive] = panelActiveColor;
+	colors[ImGuiCol_Button] = panelColor;
+	colors[ImGuiCol_ButtonHovered] = panelHoverColor;
+	colors[ImGuiCol_ButtonActive] = panelHoverColor;
+	colors[ImGuiCol_Header] = panelColor;
+	colors[ImGuiCol_HeaderHovered] = panelHoverColor;
+	colors[ImGuiCol_HeaderActive] = panelActiveColor;
+	colors[ImGuiCol_Separator] = borderColor;
+	colors[ImGuiCol_SeparatorHovered] = borderColor;
+	colors[ImGuiCol_SeparatorActive] = borderColor;
+	colors[ImGuiCol_ResizeGrip] = bgColor;
+	colors[ImGuiCol_ResizeGripHovered] = panelColor;
+	colors[ImGuiCol_ResizeGripActive] = lightBgColor;
+	colors[ImGuiCol_PlotLines] = panelActiveColor;
+	colors[ImGuiCol_PlotLinesHovered] = panelHoverColor;
+	colors[ImGuiCol_PlotHistogram] = panelActiveColor;
+	colors[ImGuiCol_PlotHistogramHovered] = panelHoverColor;
+	colors[ImGuiCol_ModalWindowDarkening] = bgColor;
+	colors[ImGuiCol_DragDropTarget] = bgColor;
+	colors[ImGuiCol_NavHighlight] = bgColor;
+	colors[ImGuiCol_DockingPreview] = panelActiveColor;
+	colors[ImGuiCol_Tab] = bgColor;
+	colors[ImGuiCol_TabActive] = panelActiveColor;
+	colors[ImGuiCol_TabUnfocused] = bgColor;
+	colors[ImGuiCol_TabUnfocusedActive] = panelActiveColor;
+	colors[ImGuiCol_TabHovered] = panelHoverColor;
+
+	style.WindowRounding = 0.0f;
+	style.ChildRounding = 0.0f;
+	style.FrameRounding = 0.0f;
+	style.GrabRounding = 0.0f;
+	style.PopupRounding = 0.0f;
+	style.ScrollbarRounding = 0.0f;
+	style.TabRounding = 0.0f;
+
+	if (!bStyleDark_) {
+		for (int i = 0; i <= ImGuiCol_COUNT; i++) {
+			ImVec4& col = style.Colors[i];
+			float H, S, V;
+			ImGui::ColorConvertRGBtoHSV(col.x, col.y, col.z, H, S, V);
+
+			if (S < 0.1f) {
+				V = 1.0f - V;
+			}
+			ImGui::ColorConvertHSVtoRGB(H, S, V, col.x, col.y, col.z);
+			if (col.w < 1.00f) {
+				col.w *= alpha_;
+			}
+		}
+	} else {
+		for (int i = 0; i <= ImGuiCol_COUNT; i++) {
+			ImVec4& col = style.Colors[i];
+			if (col.w < 1.00f) {
+				col.x *= alpha_;
+				col.y *= alpha_;
+				col.z *= alpha_;
+				col.w *= alpha_;
+			}
+		}
+	}
+}
+
 void init(const sakura::App& app)
 {
 	// #SK_TODO: Delete when we have a rendering backend!
@@ -112,15 +216,21 @@ void init(const sakura::App& app)
 
 	// Setup Dear ImGui style
 	{
+		SetupImGuiStyle(true, 1.0f);
 		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontDefault();
+		// io.Fonts->AddFontDefault();
+		ImFontConfig default_font_config;
+		default_font_config.OversampleH = default_font_config.OversampleV = 1;
+		default_font_config.PixelSnapH = true;
+		io.FontDefault =
+		io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto/Roboto-Medium.ttf", 15.0f, &default_font_config);
 
 		// merge in icons from Font Awesome
 		static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 		ImFontConfig icons_config;
 		icons_config.MergeMode = true;
 		icons_config.PixelSnapH = true;
-		io.Fonts->AddFontFromFileTTF("assets/fonts/FontAwesome5/" FONT_ICON_FILE_NAME_FAS, 13.0f,
+		io.Fonts->AddFontFromFileTTF("assets/fonts/FontAwesome5/" FONT_ICON_FILE_NAME_FAS, 15.0f,
 											  &icons_config, icons_ranges);
 		// use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
 	}
@@ -209,6 +319,10 @@ void MenuBarUI()
 {
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
+			static bool b_dark_theme = true;
+			if (ImGui::Checkbox("Dark theme", &b_dark_theme)) {
+				SetupImGuiStyle(b_dark_theme, 1.0f);
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit")) {
@@ -245,11 +359,12 @@ void update(sakura::f32 dt, const sakura::App& app)
 	MenuBarUI();
 	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
 
-	g_widgets.scene_browser.draw(g_editor_scene);
-	g_widgets.entity_inspector.draw(g_editor_scene, g_widgets.scene_browser.get_selected_entity(),
+	g_widgets.scene_browser.draw(ICON_FA_GLOBE_EUROPE " Scene###Scene", g_editor_scene);
+	g_widgets.entity_inspector.draw(ICON_FA_EYE " Inspector###Inspector", g_editor_scene,
+											  g_widgets.scene_browser.get_selected_entity(),
 											  sakura::game_lib::visit_components<sakura::ser::ImGuiEntityInspectorWalker>);
-	bool b_asset_viewer_open = true;
-	ImGui::Begin("Assets", &b_asset_viewer_open);
+	static bool b_asset_viewer_open = true;
+	ImGui::Begin(ICON_FA_FOLDER_OPEN " Assets###Assets", &b_asset_viewer_open);
 	ImGui::End();
 
 	bool b_game_scene_open = true;
@@ -269,7 +384,7 @@ void update(sakura::f32 dt, const sakura::App& app)
 	ImGui::End();
 
 	bool log_window_opened = true;
-	g_widgets.log_window.Draw("Log", &log_window_opened);
+	g_widgets.log_window.draw(ICON_FA_SCROLL " Log###Log", &log_window_opened);
 
 	// bool b_demo_window_open = false;
 	// ImGui::ShowDemoWindow(&b_demo_window_open);
