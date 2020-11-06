@@ -5,7 +5,7 @@
 #include "../game_lib/game.hpp"
 
 #define IM_VEC2_CLASS_EXTRA \
-	ImVec2 operator*(const float& r) { return ImVec2(x* r, y * r); }
+	ImVec2 operator*(const float& r) { return ImVec2(x * r, y * r); }
 
 #include "../ext/imgui/imgui.h"
 #include "../ext/imgui/backends/imgui_impl_sdl.h"
@@ -24,6 +24,8 @@ constexpr sakura::i32 HEIGHT = 768;
 
 SDL_Renderer* g_renderer = nullptr;
 SDL_Texture* g_scene_texture = nullptr;
+ImFont* g_defaultFont = nullptr;
+ImFont* g_defaultBoldFont = nullptr;
 
 static sakura::editor::Scene g_editor_scene;
 static sakura::editor::Widgets g_widgets;
@@ -226,7 +228,7 @@ void init(const sakura::App& app)
 		ImFontConfig default_font_config;
 		default_font_config.OversampleH = default_font_config.OversampleV = 1;
 		default_font_config.PixelSnapH = true;
-		io.FontDefault =
+		io.FontDefault = g_defaultFont =
 		io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto/Roboto-Medium.ttf", 15.0f, &default_font_config);
 
 		// merge in icons from Font Awesome
@@ -237,6 +239,11 @@ void init(const sakura::App& app)
 		io.Fonts->AddFontFromFileTTF("assets/fonts/FontAwesome5/" FONT_ICON_FILE_NAME_FAS, 15.0f,
 											  &icons_config, icons_ranges);
 		// use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
+
+		g_defaultBoldFont =
+		io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto/Roboto-Bold.ttf", 15.0f, &default_font_config);
+		io.Fonts->AddFontFromFileTTF("assets/fonts/FontAwesome5/" FONT_ICON_FILE_NAME_FAS, 15.0f,
+											  &icons_config, icons_ranges);
 	}
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -372,6 +379,37 @@ void update(sakura::f32 dt, const sakura::App& app)
 	});
 	static bool b_asset_viewer_open = true;
 	ImGui::Begin(ICON_FA_FOLDER_OPEN " Assets###Assets", &b_asset_viewer_open);
+	{
+#define DO_FOLDER(FolderName, Color, Icon)                                    \
+	static bool b_##FolderName = false;                                        \
+	const char* FolderName##_label = (Icon " " #FolderName "###" #FolderName); \
+	ImGui::PushStyleColor(ImGuiCol_Text, Color);                               \
+	ImGui::PushFont(g_defaultBoldFont);                                        \
+	if (ImGui::TreeNode(FolderName##_label)) {                                 \
+		ImGui::PopFont();                                                       \
+		b_##FolderName = true;                                                  \
+		ImGui::Bullet();                                                        \
+		ImGui::Selectable(#FolderName "1");                                     \
+		ImGui::Bullet();                                                        \
+		ImGui::Selectable(#FolderName "2");                                     \
+		ImGui::Bullet();                                                        \
+		ImGui::Selectable(#FolderName "3");                                     \
+		ImGui::TreePop();                                                       \
+	} else {                                                                   \
+		ImGui::PopFont();                                                       \
+		b_##FolderName = false;                                                 \
+	}                                                                          \
+	ImGui::PopStyleColor();
+
+		ImGui::TreePush("FilesSystem");
+		{
+			ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
+			DO_FOLDER(Sprites, ImColor(251, 241, 98).Value, ICON_FA_LEMON);
+			DO_FOLDER(Audio, ImColor(240, 96, 103).Value, ICON_FA_RECORD_VINYL);
+			DO_FOLDER(Scripts, ImColor(88, 175, 252).Value, ICON_FA_BUG);
+		}
+		ImGui::TreePop();
+	}
 	ImGui::End();
 
 	bool b_game_scene_open = true;
