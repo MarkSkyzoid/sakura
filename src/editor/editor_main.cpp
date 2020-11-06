@@ -361,8 +361,6 @@ void update(sakura::f32 dt, const sakura::App& app)
 	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
 
 	g_widgets.scene_browser.draw(ICON_FA_GLOBE_EUROPE " Scene###Scene", g_editor_scene);
-	g_widgets.entity_inspector.draw(ICON_FA_EYE " Inspector###Inspector", g_editor_scene,
-											  g_widgets.scene_browser.get_selected_entity(),
 	g_widgets.entity_inspector.draw(
 	ICON_FA_EYE " Inspector###Inspector", g_editor_scene, g_widgets.scene_browser.get_selected_entity(),
 	[](sakura::ser::ImGuiEntityInspectorWalker& visitor, sakura::ecs::ECS& ecs, sakura::ecs::Entity entity) {
