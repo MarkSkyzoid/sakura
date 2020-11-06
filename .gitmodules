@@ -14,3 +14,6 @@
 [submodule "src/ext/IconFontCppHeaders"]
 	path = src/ext/IconFontCppHeaders
 	url = https://github.com/juliettef/IconFontCppHeaders.git
+[submodule "src/ext/imgui_software_renderer"]
+	path = src/ext/imgui_software_renderer
+	url = https://github.com/emilk/imgui_software_renderer.git

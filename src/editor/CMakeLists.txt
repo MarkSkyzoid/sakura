@@ -23,10 +23,6 @@ endfunction(assign_source_group)
 
 project(sakura_editor)
 
-include_directories(${sakura_SOURCE_DIR})
-include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
-include_directories(${sakura_SOURCE_DIR}/../ext/IconFontCppHeaders/)
-
 file(GLOB_RECURSE sakura_editor_own_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 	"*.hpp"
 	"*.cpp"
@@ -36,17 +32,6 @@ file(GLOB_RECURSE sakura_editor_own_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 
 file(GLOB sakura_editor_SRC
    ${sakura_editor_own_SRC}
-	
-   "${sakura_SOURCE_DIR}/../ext/imgui/*.h"
-	"${sakura_SOURCE_DIR}/../ext/imgui/*.cpp"
-
-	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.h"
-	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.cpp"
-
-	"${sakura_SOURCE_DIR}/../ext/imgui/misc/cpp/imgui_stdlib.cpp"
-
-	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.h"
-	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.cpp"
 )
 
 add_executable(sakura_editor
@@ -54,6 +39,10 @@ add_executable(sakura_editor
 )
 
 assign_source_group(${sakura_editor_SRC})
+
+include_directories(${sakura_SOURCE_DIR})
+include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
+include_directories(${sakura_SOURCE_DIR}/../ext/IconFontCppHeaders/)
 
 # Link and create SDL2 Definition if we're using SDL2
 if (SDL2_ENABLED)

@@ -98,6 +98,13 @@ void sakura::game_lib::init(const App& app, sakura::ecs::ECS& ecs_instance)
 
 	for (auto i = 0; i < NUM_WALLS; i++) {
 		auto e = ecs_instance.create_entity();
+		
+		ecs_instance.add_component_to_entity<sakura::components::Tag>(e);
+		sakura::components::Tag* tag = ecs_instance.get_component<sakura::components::Tag>(e);
+		std::stringstream ss;
+		ss << "Wall " << i;
+		tag->name = ss.str();
+
 		ecs_instance.add_component_to_entity<Wall>(e);
 		Wall* w = ecs_instance.get_component<Wall>(e);
 		*w = walls[i];
@@ -144,8 +151,7 @@ void sakura::game_lib::fixed_update(f32 dt, const App& app, sakura::ecs::ECS& ec
 							auto e = ecs_instance.create_entity();
 
 							ecs_instance.add_component_to_entity<sakura::components::Tag>(e);
-							sakura::components::Tag* tag =
-							ecs_instance.get_component<sakura::components::Tag>(e);
+							sakura::components::Tag* tag = ecs_instance.get_component<sakura::components::Tag>(e);
 							std::stringstream ss;
 							ss << "Particle " << g_num_balls;
 							tag->name = ss.str();

@@ -4,14 +4,17 @@
 
 #include "../game_lib/game.hpp"
 
-#include "imgui.h"
-#include "backends/imgui_impl_sdl.h"
+#define IM_VEC2_CLASS_EXTRA \
+	ImVec2 operator*(const float& r) { return ImVec2(x* r, y * r); }
+
+#include "../ext/imgui/imgui.h"
+#include "../ext/imgui/backends/imgui_impl_sdl.h"
 #include "../ext/imgui_sdl/imgui_sdl.h"
 
 #include "../ext/IconFontCppHeaders/IconsFontAwesome5.h"
 
 #include "widgets/widgets.hpp"
-#include "imgui_internal.h"
+#include "../ext/imgui/imgui_internal.h"
 
 #include "components/components.hpp"
 #include "scene/scene.hpp"
@@ -383,12 +386,17 @@ void update(sakura::f32 dt, const sakura::App& app)
 		vMin.y += ImGui::GetWindowPos().y;
 		vMax.x += ImGui::GetWindowPos().x;
 		vMax.y += ImGui::GetWindowPos().y;
-		ImGui::Image(g_scene_texture, ImVec2(vMax.x - vMin.x, vMax.y - vMin.y));
+
+		const auto content_width = vMax.x - vMin.x;
+		const auto content_height = vMax.y - vMin.y;
+		const auto scale = std::min(content_width / WIDTH, content_height / HEIGHT);
+		const auto image_size = ImVec2(WIDTH * scale, HEIGHT * scale);
+		ImGui::SetCursorPos((ImGui::GetWindowSize() - image_size) * 0.5f);
+		ImGui::Image(g_scene_texture, image_size);
 	}
 	ImGui::End();
 
-	bool log_window_opened = true;
-	g_widgets.log_window.draw(ICON_FA_SCROLL " Log###Log", &log_window_opened);
+	g_widgets.log_window.draw(ICON_FA_SCROLL " Output###Log");
 
 	// bool b_demo_window_open = false;
 	// ImGui::ShowDemoWindow(&b_demo_window_open);

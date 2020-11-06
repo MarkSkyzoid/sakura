@@ -13,15 +13,32 @@ function(assign_source_group)
     endforeach()
 endfunction(assign_source_group)
 
-file(GLOB_RECURSE sakura_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+file(GLOB_RECURSE sakura_own_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 	"*.hpp"
 	"*.cpp"
     "private/*.hpp"
     "private/*.cpp"
 )
+file(GLOB sakura_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+	
+	${sakura_own_SRC}
+
+	"${sakura_SOURCE_DIR}/../ext/imgui/*.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/*.cpp"
+
+	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.cpp"
+
+	"${sakura_SOURCE_DIR}/../ext/imgui/misc/cpp/imgui_stdlib.cpp"
+
+	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.h"
+	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.cpp"
+)
 
 include_directories(${sakura_SOURCE_DIR})
 include_directories(${sakura_SOURCE_DIR}/../ext/lecs)
+include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
+include_directories(${sakura_SOURCE_DIR}/../ext/IconFontCppHeaders/)
 
 add_library(sakura
 	${sakura_SRC}

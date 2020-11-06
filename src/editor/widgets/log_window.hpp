@@ -7,12 +7,13 @@ namespace sakura::editor::widgets {
 	{
 		void clear();
 		void add_log(const char* fmt, ...) IM_FMTLIST(2);
-		void draw(const char* title, bool* p_opened = NULL);
+		void draw(const char* title);
 
 	private:
-		ImGuiTextBuffer Buf;
-		ImGuiTextFilter Filter;
-		ImVector<int> LineOffsets; // Index to lines offset
-		bool ScrollToBottom;
+		ImGuiTextBuffer buf_;
+		ImGuiTextFilter filter_;
+		ImVector<int> line_offsets_; // Index to lines offset
+		bool scroll_to_bottom_;
+		bool window_open_ = true;
 	};
 } // namespace sakura::editor::widgets
