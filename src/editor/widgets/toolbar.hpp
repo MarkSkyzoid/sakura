@@ -5,7 +5,7 @@ namespace sakura::editor::widgets {
 	struct Toolbar
 	{
 		using ButtonPressCallback = void (*)();
-		float size = 40.0f;
+		float size = 30.0f;
 		void draw(ImGuiViewport* viewport, float menu_bar_height);
 
 		ButtonPressCallback play_press_callback = nullptr;

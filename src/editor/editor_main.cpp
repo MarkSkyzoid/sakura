@@ -5,8 +5,10 @@
 #include "../game_lib/game.hpp"
 
 #include "imgui.h"
-#include "../ext/imgui_sdl/imgui_sdl.h"
 #include "backends/imgui_impl_sdl.h"
+#include "../ext/imgui_sdl/imgui_sdl.h"
+
+#include "../ext/IconFontCppHeaders/IconsFontAwesome5.h"
 
 #include "widgets/widgets.hpp"
 #include "imgui_internal.h"
@@ -110,11 +112,17 @@ void init(const sakura::App& app)
 
 	// Setup Dear ImGui style
 	{
-		ImFontConfig config;
-		ImFont* lato = io.Fonts->AddFontFromFileTTF("assets/fonts/Lato/Lato-Regular.ttf", 16.0f, &config);
-		if (lato) {
-			io.FontDefault = lato;
-		}
+		ImGuiIO& io = ImGui::GetIO();
+		io.Fonts->AddFontDefault();
+
+		// merge in icons from Font Awesome
+		static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+		ImFontConfig icons_config;
+		icons_config.MergeMode = true;
+		icons_config.PixelSnapH = true;
+		io.Fonts->AddFontFromFileTTF("assets/fonts/FontAwesome5/" FONT_ICON_FILE_NAME_FAS, 13.0f,
+											  &icons_config, icons_ranges);
+		// use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
 	}
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -238,12 +246,11 @@ void update(sakura::f32 dt, const sakura::App& app)
 	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
 
 	g_widgets.scene_browser.draw(g_editor_scene);
-	g_widgets.entity_inspector.draw(g_editor_scene, g_widgets.scene_browser.get_selected_entity(), sakura::game_lib::visit_components<sakura::ser::ImGuiEntityInspectorWalker>);
+	g_widgets.entity_inspector.draw(g_editor_scene, g_widgets.scene_browser.get_selected_entity(),
+											  sakura::game_lib::visit_components<sakura::ser::ImGuiEntityInspectorWalker>);
 	bool b_asset_viewer_open = true;
 	ImGui::Begin("Assets", &b_asset_viewer_open);
 	ImGui::End();
-
-	
 
 	bool b_game_scene_open = true;
 	char game_window_title_buf[256];
@@ -264,8 +271,8 @@ void update(sakura::f32 dt, const sakura::App& app)
 	bool log_window_opened = true;
 	g_widgets.log_window.Draw("Log", &log_window_opened);
 
-	bool b_demo_window_open = false;
-	ImGui::ShowDemoWindow(&b_demo_window_open);
+	// bool b_demo_window_open = false;
+	// ImGui::ShowDemoWindow(&b_demo_window_open);
 }
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {

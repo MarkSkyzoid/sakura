@@ -11,3 +11,6 @@
 [submodule "src/ext/loguru"]
 	path = src/ext/loguru
 	url = https://github.com/emilk/loguru.git
+[submodule "src/ext/IconFontCppHeaders"]
+	path = src/ext/IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders.git
