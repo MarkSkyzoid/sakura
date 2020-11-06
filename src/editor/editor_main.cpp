@@ -13,6 +13,7 @@
 #include "widgets/widgets.hpp"
 #include "imgui_internal.h"
 
+#include "components/components.hpp"
 #include "scene/scene.hpp"
 
 constexpr sakura::i32 WIDTH = 1024;
@@ -362,7 +363,12 @@ void update(sakura::f32 dt, const sakura::App& app)
 	g_widgets.scene_browser.draw(ICON_FA_GLOBE_EUROPE " Scene###Scene", g_editor_scene);
 	g_widgets.entity_inspector.draw(ICON_FA_EYE " Inspector###Inspector", g_editor_scene,
 											  g_widgets.scene_browser.get_selected_entity(),
-											  sakura::game_lib::visit_components<sakura::ser::ImGuiEntityInspectorWalker>);
+	g_widgets.entity_inspector.draw(
+	ICON_FA_EYE " Inspector###Inspector", g_editor_scene, g_widgets.scene_browser.get_selected_entity(),
+	[](sakura::ser::ImGuiEntityInspectorWalker& visitor, sakura::ecs::ECS& ecs, sakura::ecs::Entity entity) {
+		sakura::components::visit_components<sakura::ser::ImGuiEntityInspectorWalker>(visitor, ecs, entity);
+		sakura::game_lib::visit_components<sakura::ser::ImGuiEntityInspectorWalker>(visitor, ecs, entity);
+	});
 	static bool b_asset_viewer_open = true;
 	ImGui::Begin(ICON_FA_FOLDER_OPEN " Assets###Assets", &b_asset_viewer_open);
 	ImGui::End();

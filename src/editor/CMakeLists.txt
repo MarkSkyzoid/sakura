@@ -43,6 +43,8 @@ file(GLOB sakura_editor_SRC
 	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.h"
 	"${sakura_SOURCE_DIR}/../ext/imgui/backends/imgui_impl_sdl.cpp"
 
+	"${sakura_SOURCE_DIR}/../ext/imgui/misc/cpp/imgui_stdlib.cpp"
+
 	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.h"
 	"${sakura_SOURCE_DIR}/../ext/imgui_sdl/imgui_sdl.cpp"
 )

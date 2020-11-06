@@ -2,6 +2,7 @@
 
 #include "../ext/imgui/imgui.h"
 #include "serialization/serialization.hpp"
+#include "components/components.hpp"
 
 // Custom serialization for ImGui
 namespace sakura::ser {
@@ -9,7 +10,14 @@ namespace sakura::ser {
 	{
 		const bool selected = entity.is_valid() && walker.selected_entity == entity;
 		char label[256];
-		sprintf_s(label, "Entity %d", entity.get_index());
+		if (ecs_instance.has_component<sakura::components::Tag>(entity)) {
+			sakura::components::Tag* tag = ecs_instance.get_component<sakura::components::Tag>(entity);
+			sprintf_s(label, "%s", tag->name.c_str());
+		} else {
+			sprintf_s(label, "Entity %d", entity.get_index());
+		}
+		sprintf_s(label, "%s###Entity%d", label, entity.get_index());
+
 		if (ImGui::Selectable(label, selected)) {
 			walker.selected_entity = entity;
 		}

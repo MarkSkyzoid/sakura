@@ -55,8 +55,8 @@ namespace sakura {
 	}
 #define SAKURA_FIELD(NAME) .field(#NAME, obj.NAME)
 #define SAKURA_IS_FRIEND(TYPE)                                \
-	template<typename V> friend void SAKURA::visit(V&, TYPE&); \
-	template<typename V> friend void SAKURA::visit(V&, const TYPE&);
+	template<typename V> friend void sakura::ser::visit(V&, TYPE&); \
+	template<typename V> friend void sakura::ser::visit(V&, const TYPE&);
 
 #define SAKURA_ENUM(TYPE, ELEMS)                                          \
 	namespace sakura::ser {                                                \

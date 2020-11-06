@@ -6,6 +6,7 @@
 
 #include <string>
 #include "../game_lib/components/components.hpp"
+#include "components/components.hpp"
 
 namespace sakura::ser {
 	struct ImGuiEntityInspectorWalker
@@ -121,6 +122,11 @@ namespace sakura::ser {
 		ImGui::InputText(writer.name, &string);
 	}
 
+	inline void visit(ImguiWriter& writer, const char* string)
+	{
+		ImGui::LabelText(writer.name, string);
+	}
+
 	template<typename Element> void visit(ImguiWriter& writer, std::vector<Element>& vector)
 	{
 		if (ImGui::CollapsingHeader(writer.name)) {
@@ -155,12 +161,45 @@ namespace sakura::ser {
 		walker.visit_components_callback(walker, scene.ecs, walker.entity);
 	}
 
+	inline void visit(ImGuiEntityInspectorWalker& walker, sakura::components::Tag& tag)
+	{
+		std::cout << tag.name << std::endl;
+	}
+
+	template<> struct StructVisitor<ImguiWriter>
+	{
+		const char* name;
+		ImguiWriter& writer;
+		bool child_begun = false;
+		StructVisitor(const char* name_, ImguiWriter& writer_) : name(name_), writer(writer_)
+		{
+			child_begun =
+			ImGui::CollapsingHeader(name, ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen);
+		}
+		~StructVisitor() {}
+
+		template<typename T> StructVisitor& field(const char* label, T& value)
+		{
+			if (child_begun) {
+				ImguiWriter element_writer(label);
+				visit(element_writer, value);
+			}
+			return *this;
+		}
+	};
+
 	template<> struct StructVisitor<ImGuiEntityInspectorWalker>
 	{
 		StructVisitor(const char* name, ImGuiEntityInspectorWalker& walker)
 		: name_(name), imgui_walker_(walker)
 		{
-			header_open_ = ImGui::CollapsingHeader(name_);
+			std::string label_str = name_;
+			auto beginning_of_label = label_str.find_last_of("::");
+			if (beginning_of_label != std::string::npos) {
+				label_str = label_str.substr(beginning_of_label + 1);
+			}
+
+			header_open_ = ImGui::CollapsingHeader(label_str.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
 		}
 		~StructVisitor() {}
 
@@ -173,10 +212,9 @@ namespace sakura::ser {
 			return *this;
 		}
 
-		StructVisitor& field(const char* label, sakura::editor::Scene& value)
+		StructVisitor& field(const char* label, sakura::components::Tag& value) 
 		{
 			if (header_open_) {
-				visit(imgui_walker_, value);
 			}
 			return *this;
 		}
@@ -184,7 +222,7 @@ namespace sakura::ser {
 		StructVisitor& field(const char* label, float2& value)
 		{
 			if (header_open_) {
-				ImGui::DragFloat2(label, &value.x, 0.1, -FLT_MAX, FLT_MAX);
+				ImGui::DragFloat2(label, &value.x, 0.1f, -FLT_MAX, FLT_MAX);
 			}
 			return *this;
 		}

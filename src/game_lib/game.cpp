@@ -9,6 +9,7 @@
 #include <array>
 #include <algorithm>
 #include <sstream>
+#include "../sakura/components/components.hpp"
 
 float rand_z_to_o() { return rand() / (RAND_MAX + 1.); }
 float rand_mo_to_o() { return rand_z_to_o() * 2.0f - 1.0f; }
@@ -67,6 +68,12 @@ void sakura::game_lib::init(const App& app, sakura::ecs::ECS& ecs_instance)
 	srand(app.main_clock().time_cycles());
 	for (auto i = 0; i < NUM_PARTICLES; i++) {
 		auto e = ecs_instance.create_entity();
+		ecs_instance.add_component_to_entity<sakura::components::Tag>(e);
+		sakura::components::Tag* tag = ecs_instance.get_component<sakura::components::Tag>(e);
+		std::stringstream ss;
+		ss << "Particle " << i;
+		tag->name = ss.str();
+
 		ecs_instance.add_component_to_entity<Particle>(e);
 		Particle* p = ecs_instance.get_component<Particle>(e);
 
@@ -135,6 +142,14 @@ void sakura::game_lib::fixed_update(f32 dt, const App& app, sakura::ecs::ECS& ec
 
 						if (rand_z_to_o() > 0.9 && g_num_balls < 30) {
 							auto e = ecs_instance.create_entity();
+
+							ecs_instance.add_component_to_entity<sakura::components::Tag>(e);
+							sakura::components::Tag* tag =
+							ecs_instance.get_component<sakura::components::Tag>(e);
+							std::stringstream ss;
+							ss << "Particle " << g_num_balls;
+							tag->name = ss.str();
+
 							ecs_instance.add_component_to_entity<Particle>(e);
 							Particle* new_p = ecs_instance.get_component<Particle>(e);
 							*new_p = Particle::make(p.pos, p.vel * -1.0f);
