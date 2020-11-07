@@ -284,7 +284,6 @@ void draw_menubar_ui()
 
 			std::function<void()> theme_setups[Theme::Count] = {
 				[]() { SetupImGuiStyle(true, 1.0f); }, []() { SetupImGuiStyle(false, 1.0f); },
-				[]() { SetupImGuiStyleCherry(true, 1.0f); }, []() { SetupImGuiStyleCherry(false, 1.0f); }
 			};
 
 			for (int t = 0; t < Theme::Count; t++) {
