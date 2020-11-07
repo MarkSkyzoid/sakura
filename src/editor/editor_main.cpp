@@ -1,5 +1,6 @@
 #include "app.hpp"
 #include "log/log.hpp"
+#include "imgui/imgui.hpp"
 #include "SDL.h"
 
 #include "../game_lib/game.hpp"
@@ -8,7 +9,6 @@
 	ImVec2 operator*(const float& r) { return ImVec2(x * r, y * r); }
 
 #include "../ext/imgui/imgui.h"
-#include "../ext/imgui/backends/imgui_impl_sdl.h"
 #include "../ext/imgui_sdl/imgui_sdl.h"
 
 #include "../ext/IconFontCppHeaders/IconsFontAwesome5.h"
@@ -41,6 +41,8 @@ enum class PlayState
 PlayState g_play_state = PlayState::Playing;
 
 sakura::Clock g_editor_clock;
+
+sakura::ImGuiLayer g_imgui_layer;
 
 inline void SetupImGuiStyle(bool bStyleDark_, float alpha_)
 {
@@ -252,6 +254,7 @@ void init(const sakura::App& app)
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
+	g_imgui_layer.init(WIDTH, HEIGHT);
 	ImGuiSDL::Initialize(g_renderer, WIDTH, HEIGHT);
 
 	// Init game
@@ -262,7 +265,8 @@ void cleanup(const sakura::App& app)
 	// Clean up game first
 	sakura::game_lib::cleanup(app, g_editor_scene.ecs);
 
-	ImGuiSDL::Deinitialize();
+	g_imgui_layer.cleanup();
+	// ImGuiSDL::Deinitialize();
 	SDL_DestroyRenderer(g_renderer);
 	ImGui::DestroyContext();
 }
@@ -360,12 +364,11 @@ void update(sakura::f32 dt, const sakura::App& app)
 	sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
 	g_editor_clock.update(dt);
 
-	ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(app.native_window_handle()));
-	ImGui_UpdateMousePosAndButtons();
+	g_imgui_layer.new_frame();
 
-	ImGui::NewFrame();
+	// ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(app.native_window_handle()));
+	// ImGui_UpdateMousePosAndButtons();
 
-	// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 	DockSpaceUI(g_widgets.toolbar.size);
 	MenuBarUI();
 	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
@@ -448,7 +451,7 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 
 		// Render imgui
 		SDL_SetRenderTarget(renderer, NULL);
-		ImGui::Render();
+		g_imgui_layer.render();
 		ImGuiSDL::Render(ImGui::GetDrawData());
 
 		SDL_RenderPresent(renderer);
@@ -460,8 +463,8 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 
 void native_message_pump(void* data)
 {
-	SDL_Event e = *static_cast<SDL_Event*>(data);
-	ImGui_ImplSDL2_ProcessEvent(&e);
+	SDL_Event* e = static_cast<SDL_Event*>(data);
+	g_imgui_layer.on_event(e);
 }
 
 int main(int argc, char* argv[])
