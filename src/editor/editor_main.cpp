@@ -20,6 +20,7 @@
 
 #include "components/components.hpp"
 #include "scene/scene.hpp"
+#include <functional>
 
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
@@ -268,25 +269,31 @@ void draw_dockspace_ui(float toolbar_size)
 void draw_menubar_ui()
 {
 	if (ImGui::BeginMainMenuBar()) {
-		if (ImGui::BeginMenu("File")) {
-			static bool b_dark_theme = true;
-			if (ImGui::Checkbox("Dark theme", &b_dark_theme)) {
-				SetupImGuiStyle(b_dark_theme, 1.0f);
+		if (ImGui::BeginMenu("Theme")) {
+			enum Theme
+			{
+				DarkTheme = 0,
+				LightTheme,
+				Count
+			};
+			static int theme = DarkTheme;
+			const char* theme_names[Theme::Count] = {
+				"Dark Theme",
+				"Light Theme",
+			};
+
+			std::function<void()> theme_setups[Theme::Count] = {
+				[]() { SetupImGuiStyle(true, 1.0f); }, []() { SetupImGuiStyle(false, 1.0f); },
+				[]() { SetupImGuiStyleCherry(true, 1.0f); }, []() { SetupImGuiStyleCherry(false, 1.0f); }
+			};
+
+			for (int t = 0; t < Theme::Count; t++) {
+				if (ImGui::RadioButton(theme_names[t], theme == t)) {
+					theme_setups[t]();
+					theme = t;
+				}
 			}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Edit")) {
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {
-			}
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {
-			} // Disabled item
-			ImGui::Separator();
-			if (ImGui::MenuItem("Cut", "CTRL+X")) {
-			}
-			if (ImGui::MenuItem("Copy", "CTRL+C")) {
-			}
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {
-			}
+
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
@@ -422,10 +429,7 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 	render_system(editor_dt, frame_interpolator, g_renderer);
 }
 
-void end_of_main_loop_update(sakura::f32 dt, const sakura::App& app)
-{
-	g_editor_clock.update(dt);
-}
+void end_of_main_loop_update(sakura::f32 dt, const sakura::App& app) { g_editor_clock.update(dt); }
 
 void native_message_pump(void* data)
 {
