@@ -1,5 +1,6 @@
 #pragma once
 
+#include "private/platform_detection.hpp"
 #include "type_aliases.hpp"
 #include <functional>
 #include <memory>
