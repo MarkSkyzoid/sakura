@@ -27,7 +27,7 @@ void sakura::platform::init(PlatformHandle& handle)
 	SKR_ASSERT_M(config.width != 0 && config.height != 0,
 					 "Can't initialize window with width = %d and height=%d !", config.width, config.height);
 
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_EVERYTHING);
 
 	Uint32 window_flags = 0u;
 	window_flags |= config.resizable ? SDL_WINDOW_RESIZABLE : 0u;

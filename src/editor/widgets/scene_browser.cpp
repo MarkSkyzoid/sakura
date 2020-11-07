@@ -3,6 +3,7 @@
 #include "../ext/imgui/imgui.h"
 #include "serialization/serialization.hpp"
 #include "components/components.hpp"
+#include "IconsFontAwesome5.h"
 
 // Custom serialization for ImGui
 namespace sakura::ser {
@@ -16,10 +17,13 @@ namespace sakura::ser {
 		} else {
 			sprintf_s(label, "Entity %d", entity.get_index());
 		}
-		sprintf_s(label, "%s###Entity%d", label, entity.get_index());
 
-		if (ImGui::Selectable(label, selected)) {
-			walker.selected_entity = entity;
+		if (walker.filter.PassFilter(label)) {
+			sprintf_s(label, "%s###Entity%d", label, entity.get_index());
+
+			if (ImGui::Selectable(label, selected)) {
+				walker.selected_entity = entity;
+			}
 		}
 	}
 
@@ -51,6 +55,10 @@ namespace sakura::ser {
 void sakura::editor::widgets::SceneBrowser::draw(const char* title, sakura::editor::Scene& scene)
 {
 	ImGui::Begin(title, &window_open_);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - ImGui::GetFontSize());
+	filter.Draw(ICON_FA_SEARCH "###filter");
+	ImGui::Separator();
+	ser_imgui_scene_walker_.filter = filter;
 	sakura::ser::visit(ser_imgui_scene_walker_, scene);
 	ImGui::End();
 }
