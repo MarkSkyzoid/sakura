@@ -32,6 +32,7 @@ namespace sakura {
 		UpdateCallbackType fixed_update_callback = nullptr;
 		UpdateCallbackType update_callback = nullptr;
 		RenderCallbackType render_callback = nullptr;
+		UpdateCallbackType end_of_main_loop_update = nullptr;
 		/* #SK_TODO: DELETE */
 		NativeMessagePumpCallback native_message_pump_callback = nullptr;
 	};
@@ -127,6 +128,11 @@ namespace sakura {
 		Builder& set_render_callback(AppConfig::RenderCallbackType callback)
 		{
 			config_.render_callback = callback;
+			return *this;
+		}
+		Builder& set_end_of_main_loop_update_callback(AppConfig::UpdateCallbackType callback)
+		{
+			config_.end_of_main_loop_update = callback;
 			return *this;
 		}
 		/* #SK_TODO: DELETE */

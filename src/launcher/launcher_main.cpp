@@ -36,6 +36,9 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 {
 	sakura::game_lib::render(dt, frame_interpolator, app, g_game_ecs, g_renderer);
 }
+void end_of_main_loop_update(sakura::f32 dt, const sakura::App& app)
+{
+}
 
 int main(int argc, char* argv[])
 {
@@ -48,7 +51,8 @@ int main(int argc, char* argv[])
 							.set_cleanup_callback(cleanup)
 							.set_fixed_update_callback(fixed_update)
 							.set_update_callback(update)
-							.set_render_callback(render);
+							.set_render_callback(render)
+							.set_end_of_main_loop_update_callback(end_of_main_loop_update);
 
 	app.run();
 

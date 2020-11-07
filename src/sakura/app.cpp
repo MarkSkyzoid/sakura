@@ -49,6 +49,7 @@ void sakura::App::run()
 
 		auto dt_seconds = frame_duration.get();
 		main_clock_.update(dt_seconds);
+		config_.end_of_main_loop_update(dt_seconds, *this);
 	}
 
 	// Cleanup
@@ -130,6 +131,9 @@ sakura::App::Builder::operator sakura::App() const
 							 "App::Builder");
 	SKR_ASSERT_FATAL_M(config_.update_callback != nullptr,
 							 "Update Callback not set.\nCall .set_update_callback on the App::Builder");
+	SKR_ASSERT_FATAL_M(config_.end_of_main_loop_update != nullptr,
+							 "End of Main Loop Update Callback not set.\nCall "
+							 ".set_end_of_main_loop_update_callback on the App::Builder");
 	SKR_ASSERT_FATAL_M(config_.render_callback != nullptr,
 							 "Render Callback not set.\nCall .set_render_callback on the App::Builder");
 

@@ -5,8 +5,10 @@
 
 #include "../game_lib/game.hpp"
 
-#define IM_VEC2_CLASS_EXTRA \
-	ImVec2 operator*(const float& r) { return ImVec2(x * r, y * r); }
+#define IM_VEC2_CLASS_EXTRA                                               \
+	ImVec2 operator*(const float& r) { return ImVec2(x * r, y * r); }      \
+	ImVec2 operator+(const ImVec2& r) { return ImVec2(x + r.x, y + r.y); } \
+	ImVec2 operator-(const ImVec2& r) { return ImVec2(x - r.x, y - r.y); }
 
 #include "../ext/imgui/imgui.h"
 #include "../ext/imgui_sdl/imgui_sdl.h"
@@ -22,10 +24,10 @@
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
 
-SDL_Renderer* g_renderer = nullptr;
-SDL_Texture* g_scene_texture = nullptr;
-ImFont* g_defaultFont = nullptr;
-ImFont* g_defaultBoldFont = nullptr;
+static SDL_Renderer* g_renderer = nullptr;
+static SDL_Texture* g_scene_texture = nullptr;
+static ImFont* g_defaultFont = nullptr;
+static ImFont* g_defaultBoldFont = nullptr;
 
 static sakura::editor::Scene g_editor_scene;
 static sakura::editor::Widgets g_widgets;
@@ -37,12 +39,11 @@ enum class PlayState
 	Playing,
 	Count
 };
-
 PlayState g_play_state = PlayState::Playing;
-
 sakura::Clock g_editor_clock;
-
 sakura::ImGuiLayer g_imgui_layer;
+
+static float g_FPS = 0.0f;
 
 inline void SetupImGuiStyle(bool bStyleDark_, float alpha_)
 {
@@ -188,39 +189,7 @@ void init(const sakura::App& app)
 
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
-	// io.ConfigViewportsNoAutoMerge = true;
-	// io.ConfigViewportsNoTaskBarIcon = true;
-	// Setup backend capabilities flags
-	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors; // We can honor GetMouseCursor() values (optional)
-
-	io.BackendPlatformName = "imgui_impl_sdl";
-
-	// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
-	io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
-	io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-	io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-	io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-	io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-	io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-	io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-	io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-	io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-	io.KeyMap[ImGuiKey_Insert] = SDL_SCANCODE_INSERT;
-	io.KeyMap[ImGuiKey_Delete] = SDL_SCANCODE_DELETE;
-	io.KeyMap[ImGuiKey_Backspace] = SDL_SCANCODE_BACKSPACE;
-	io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
-	io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
-	io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
-	io.KeyMap[ImGuiKey_KeyPadEnter] = SDL_SCANCODE_KP_ENTER;
-	io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
-	io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
-	io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
-	io.KeyMap[ImGuiKey_X] = SDL_SCANCODE_X;
-	io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
-	io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
-
-	io.ClipboardUserData = NULL;
+	// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
 
 	// Setup Dear ImGui style
 	{
@@ -243,7 +212,7 @@ void init(const sakura::App& app)
 		// use FONT_ICON_FILE_NAME_FAR if you want regular instead of solid
 
 		g_defaultBoldFont =
-		io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto/Roboto-Bold.ttf", 15.0f, &default_font_config);
+		io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto/Roboto-Black.ttf", 15.0f, &default_font_config);
 		io.Fonts->AddFontFromFileTTF("assets/fonts/FontAwesome5/" FONT_ICON_FILE_NAME_FAS, 15.0f,
 											  &icons_config, icons_ranges);
 	}
@@ -254,7 +223,7 @@ void init(const sakura::App& app)
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
-	g_imgui_layer.init(WIDTH, HEIGHT);
+	g_imgui_layer.init(static_cast<SDL_Window*>(app.native_window_handle()), WIDTH, HEIGHT);
 	ImGuiSDL::Initialize(g_renderer, WIDTH, HEIGHT);
 
 	// Init game
@@ -266,46 +235,11 @@ void cleanup(const sakura::App& app)
 	sakura::game_lib::cleanup(app, g_editor_scene.ecs);
 
 	g_imgui_layer.cleanup();
-	// ImGuiSDL::Deinitialize();
 	SDL_DestroyRenderer(g_renderer);
-	ImGui::DestroyContext();
-}
-void fixed_update(sakura::f32 dt, const sakura::App& app)
-{
-	if (g_play_state == PlayState::Playing) {
-		sakura::game_lib::fixed_update(dt, app, g_editor_scene.ecs);
-	} else {
-		sakura::game_lib::fixed_update(0.0f, app, g_editor_scene.ecs);
-	}
 }
 
-void ImGui_UpdateMousePosAndButtons()
-{
-	ImGuiIO& io = ImGui::GetIO();
-	io.MouseHoveredViewport = 0;
-
-	io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-
-	// [2]
-	// Set Dear ImGui mouse pos from OS mouse pos + get buttons. (this is the common behavior)
-	int mouse_x_local, mouse_y_local;
-	Uint32 mouse_buttons = SDL_GetMouseState(&mouse_x_local, &mouse_y_local);
-
-	// SDL 2.0.3 and before: single-viewport only
-	io.MousePos = ImVec2((float)mouse_x_local, (float)mouse_y_local);
-}
-
-float menu_bar_height = 0;
-ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
-{
-	return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
-}
-ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs)
-{
-	return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y);
-}
-
-void DockSpaceUI(float toolbar_size)
+static float menu_bar_height = 0;
+void draw_dockspace_ui(float toolbar_size)
 {
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->Pos + ImVec2(0, toolbar_size));
@@ -330,7 +264,7 @@ void DockSpaceUI(float toolbar_size)
 	ImGui::PopStyleVar(3);
 }
 
-void MenuBarUI()
+void draw_menubar_ui()
 {
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
@@ -358,19 +292,17 @@ void MenuBarUI()
 	}
 }
 
-void update(sakura::f32 dt, const sakura::App& app)
+struct ImguiFrameBlocker
 {
-	auto editor_dt = g_editor_clock.delta_time_seconds();
-	sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
-	g_editor_clock.update(dt);
+	bool did_update = false;
+} g_imgui_frameblocker;
 
-	g_imgui_layer.new_frame();
+void imgui_update(sakura::f32 dt, const sakura::App& app)
+{
+	g_imgui_layer.new_frame(static_cast<SDL_Window*>(app.native_window_handle()));
 
-	// ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(app.native_window_handle()));
-	// ImGui_UpdateMousePosAndButtons();
-
-	DockSpaceUI(g_widgets.toolbar.size);
-	MenuBarUI();
+	draw_dockspace_ui(g_widgets.toolbar.size);
+	draw_menubar_ui();
 	g_widgets.toolbar.draw(ImGui::GetMainViewport(), menu_bar_height);
 
 	g_widgets.scene_browser.draw(ICON_FA_GLOBE_EUROPE " Scene###Scene", g_editor_scene);
@@ -386,7 +318,7 @@ void update(sakura::f32 dt, const sakura::App& app)
 #define DO_FOLDER(FolderName, Color, Icon)                                    \
 	static bool b_##FolderName = false;                                        \
 	const char* FolderName##_label = (Icon " " #FolderName "###" #FolderName); \
-	ImGui::PushStyleColor(ImGuiCol_Text, Color);                               \
+	ImGui::PushStyleColor(ImGuiCol_Text, Color.Value);                         \
 	ImGui::PushFont(g_defaultBoldFont);                                        \
 	if (ImGui::TreeNode(FolderName##_label)) {                                 \
 		ImGui::PopFont();                                                       \
@@ -407,9 +339,9 @@ void update(sakura::f32 dt, const sakura::App& app)
 		ImGui::TreePush("FilesSystem");
 		{
 			ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());
-			DO_FOLDER(Sprites, ImColor(251, 241, 98).Value, ICON_FA_LEMON);
-			DO_FOLDER(Audio, ImColor(240, 96, 103).Value, ICON_FA_RECORD_VINYL);
-			DO_FOLDER(Scripts, ImColor(88, 175, 252).Value, ICON_FA_BUG);
+			DO_FOLDER(Sprites, ImColor(251, 241, 98), ICON_FA_LEMON);
+			DO_FOLDER(Audio, ImColor(240, 96, 103), ICON_FA_RECORD_VINYL);
+			DO_FOLDER(Scripts, ImColor(88, 175, 252), ICON_FA_BUG);
 		}
 		ImGui::TreePop();
 	}
@@ -417,7 +349,7 @@ void update(sakura::f32 dt, const sakura::App& app)
 
 	bool b_game_scene_open = true;
 	char game_window_title_buf[256];
-	sprintf_s(game_window_title_buf, "Game - FPS: %f###Game", 1.0f / dt);
+	sprintf_s(game_window_title_buf, "Game - FPS: %f###Game", g_FPS);
 	ImGui::Begin(game_window_title_buf, &b_game_scene_open);
 	{
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
@@ -441,7 +373,30 @@ void update(sakura::f32 dt, const sakura::App& app)
 
 	// bool b_demo_window_open = false;
 	// ImGui::ShowDemoWindow(&b_demo_window_open);
+
+	g_imgui_frameblocker.did_update = true;
 }
+
+void fixed_update(sakura::f32 dt, const sakura::App& app)
+{
+	if (g_play_state == PlayState::Playing) {
+		sakura::game_lib::fixed_update(dt, app, g_editor_scene.ecs);
+	} else {
+		sakura::game_lib::fixed_update(0.0f, app, g_editor_scene.ecs);
+	}
+
+	if (!g_imgui_frameblocker.did_update) {
+		imgui_update(dt, app);
+	}
+}
+
+void update(sakura::f32 dt, const sakura::App& app)
+{
+	auto editor_dt = g_editor_clock.delta_time_seconds();
+	sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
+	g_FPS = 1.0f / editor_dt;
+}
+
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
 	auto render_system = [&app](float delta_time, float interpolator, SDL_Renderer* renderer) {
@@ -451,14 +406,24 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 
 		// Render imgui
 		SDL_SetRenderTarget(renderer, NULL);
-		g_imgui_layer.render();
-		ImGuiSDL::Render(ImGui::GetDrawData());
+
+		if (g_imgui_frameblocker.did_update) {
+			g_imgui_layer.render();
+			ImGuiSDL::Render(ImGui::GetDrawData());
+
+			g_imgui_frameblocker.did_update = false;
+		}
 
 		SDL_RenderPresent(renderer);
 	};
 
 	auto editor_dt = g_editor_clock.delta_time_seconds();
 	render_system(editor_dt, frame_interpolator, g_renderer);
+}
+
+void end_of_main_loop_update(sakura::f32 dt, const sakura::App& app)
+{
+	g_editor_clock.update(dt);
 }
 
 void native_message_pump(void* data)
@@ -481,6 +446,7 @@ int main(int argc, char* argv[])
 							.set_fixed_update_callback(fixed_update)
 							.set_update_callback(update)
 							.set_render_callback(render)
+							.set_end_of_main_loop_update_callback(end_of_main_loop_update)
 							.set_native_message_pump_callback(native_message_pump);
 
 	app.run();
