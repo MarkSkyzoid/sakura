@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2020-11-08T11:46:50.183Z" agent="5.0 (Windows)" etag="_-6HW-6-dSLd_Jrixd6s" version="13.9.2" type="github">
+<mxfile host="app.diagrams.net" modified="2020-11-08T11:47:48.516Z" agent="5.0 (Windows)" etag="IkpgH80-kqfRauzp4N28" version="13.9.2" type="github">
   <diagram name="Page-1" id="5f0bae14-7c28-e335-631c-24af17079c00">
     <mxGraphModel dx="2370" dy="1272" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="#ffffff" math="0" shadow="0">
       <root>
@@ -11,7 +11,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-6" value="PluginRegistry&#xa;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="10" y="790" width="510" height="216" as="geometry" />
+          <mxGeometry x="10" y="590" width="510" height="216" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-7" value="+ plugins_: Map&lt;PluginHandle, APIPluginInterface&gt; // for each api type (initially one)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="mCeQU3a0SMr_kupnbloG-6">
           <mxGeometry y="26" width="510" height="34" as="geometry" />
@@ -41,7 +41,7 @@
           <mxGeometry y="182" width="510" height="34" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-14" value="PluginDLL" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#000000;" vertex="1" parent="1">
-          <mxGeometry x="1090" y="642" width="140" height="104" as="geometry" />
+          <mxGeometry x="740" y="680" width="140" height="104" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-15" value="+ dll_hanld: HANDLE&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="mCeQU3a0SMr_kupnbloG-14">
           <mxGeometry y="26" width="140" height="26" as="geometry" />
@@ -53,10 +53,10 @@
           <mxGeometry y="78" width="140" height="26" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-18" value="&lt;div&gt;windows only&lt;br&gt;&lt;/div&gt;" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;" vertex="1" parent="1">
-          <mxGeometry x="1090" y="622" width="140" height="20" as="geometry" />
+          <mxGeometry x="740" y="660" width="140" height="20" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-42" value="PluginHandle" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#000000;" vertex="1" parent="1">
-          <mxGeometry x="740" y="620" width="250" height="134" as="geometry" />
+          <mxGeometry x="740" y="420" width="250" height="134" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-43" value="+ load_callback : load_callback_type" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="mCeQU3a0SMr_kupnbloG-42">
           <mxGeometry y="26" width="250" height="34" as="geometry" />
@@ -70,44 +70,44 @@
         <mxCell id="mCeQU3a0SMr_kupnbloG-45" value="+ dll : PluginDLL" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="mCeQU3a0SMr_kupnbloG-42">
           <mxGeometry y="108" width="250" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="mCeQU3a0SMr_kupnbloG-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.002;entryY=0.119;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;" edge="1" parent="1" source="mCeQU3a0SMr_kupnbloG-45" target="mCeQU3a0SMr_kupnbloG-14">
+        <mxCell id="mCeQU3a0SMr_kupnbloG-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.002;entryY=0.119;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;" edge="1" parent="1" source="mCeQU3a0SMr_kupnbloG-45" target="mCeQU3a0SMr_kupnbloG-14">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-58" value="&lt;b&gt;on_unload &lt;/b&gt;you can use the serialization system to binary serialize any data, put it into some userdata and give it back to the &lt;b&gt;PluginRegistry&lt;/b&gt;, then you&#39;ll get it back &lt;b&gt;on_load&lt;/b&gt; (you can check if you are reloading)" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;align=left;" vertex="1" parent="1">
-          <mxGeometry x="620" y="800" width="310" height="177" as="geometry" />
+          <mxGeometry x="740" y="230" width="310" height="177" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-61" value="&lt;div&gt;Plugin Folder&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="10" y="200" width="680" height="560" as="geometry" />
+          <mxGeometry x="10" width="680" height="560" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-68" value="&lt;div&gt;Plugin Header FIle (.hpp) all in a &lt;b&gt;plugin namespace&lt;/b&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;" vertex="1" parent="1">
-          <mxGeometry x="20" y="530" width="320" height="220" as="geometry" />
+          <mxGeometry x="20" y="330" width="320" height="220" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-69" value="&lt;div&gt;Private Folder&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;" vertex="1" parent="1">
-          <mxGeometry x="20" y="240" width="650" height="280" as="geometry" />
+          <mxGeometry x="20" y="40" width="650" height="280" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-70" value="&lt;div&gt;Plugin Implementation File (.cpp)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;" vertex="1" parent="1">
-          <mxGeometry x="30" y="275" width="460" height="225" as="geometry" />
+          <mxGeometry x="30" y="75" width="460" height="225" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-73" value="«interface»&lt;br&gt;&lt;div&gt;&lt;b&gt;create_plugin() : PluginHandle&lt;br&gt;&lt;/b&gt;&lt;/div&gt;" style="html=1;" vertex="1" parent="1">
-          <mxGeometry x="30" y="570" width="270" height="50" as="geometry" />
+          <mxGeometry x="30" y="370" width="270" height="50" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-75" value="«EXPORT»&lt;br&gt;&lt;div&gt;&lt;b&gt;on_load(PluginRegistry&amp;amp;, LoadOptions)&lt;/b&gt;&lt;/div&gt;" style="html=1;" vertex="1" parent="1">
-          <mxGeometry x="30" y="630" width="270" height="50" as="geometry" />
+          <mxGeometry x="30" y="430" width="270" height="50" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-76" value="«EXPORT»&lt;br&gt;&lt;div&gt;&lt;b&gt;on_unload(&lt;/b&gt;&lt;b&gt;PluginRegistry&amp;amp;, LoadOptions)&lt;/b&gt;&lt;/div&gt;" style="html=1;" vertex="1" parent="1">
-          <mxGeometry x="30" y="680" width="270" height="50" as="geometry" />
+          <mxGeometry x="30" y="480" width="270" height="50" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-78" value="&lt;div&gt;«Implementation»&lt;/div&gt;&lt;div&gt;&lt;b&gt;create_plugin() : PluginHandle&lt;br&gt;&lt;/b&gt;&lt;/div&gt;" style="html=1;" vertex="1" parent="1">
-          <mxGeometry x="40" y="320" width="270" height="50" as="geometry" />
+          <mxGeometry x="40" y="120" width="270" height="50" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-79" value="«Implementation»&lt;br&gt;&lt;div&gt;&lt;b&gt;on_load(PluginRegistry&amp;amp;, LoadOptions)&lt;/b&gt;&lt;/div&gt;" style="html=1;" vertex="1" parent="1">
-          <mxGeometry x="40" y="380" width="270" height="50" as="geometry" />
+          <mxGeometry x="40" y="180" width="270" height="50" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-80" value="«Implementation»&lt;br&gt;&lt;div&gt;&lt;b&gt;on_unload(&lt;/b&gt;&lt;b&gt;PluginRegistry&amp;amp;, LoadOptions)&lt;/b&gt;&lt;/div&gt;" style="html=1;" vertex="1" parent="1">
-          <mxGeometry x="40" y="430" width="270" height="50" as="geometry" />
+          <mxGeometry x="40" y="230" width="270" height="50" as="geometry" />
         </mxCell>
         <mxCell id="mCeQU3a0SMr_kupnbloG-81" value="&lt;div&gt;On &lt;b&gt;Windows&lt;/b&gt; when&amp;nbsp; &lt;b&gt;Hot Reloading &lt;/b&gt;is &lt;b&gt;ENABLED:&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;create_plugin&lt;/b&gt; sets the DLLPath and keeps the callbacks to &lt;b&gt;nullptr&lt;/b&gt;&lt;/div&gt;&lt;div&gt;On other &lt;b&gt;Platforms &lt;/b&gt;or&lt;b&gt; Hot Reloading &lt;/b&gt;is &lt;b&gt;DISABLED:&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;create_plugin&lt;/b&gt; sets the callbacks direcly as function pointers&lt;br&gt;&lt;/div&gt;" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;align=left;" vertex="1" parent="1">
-          <mxGeometry x="355" y="530" width="310" height="220" as="geometry" />
+          <mxGeometry x="355" y="330" width="310" height="220" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
