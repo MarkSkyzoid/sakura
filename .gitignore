@@ -34,3 +34,5 @@
 # Directories
 build/
 temp/
+bin/
+plugins/

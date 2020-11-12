@@ -22,6 +22,8 @@
 #include "scene/scene.hpp"
 #include <functional>
 
+#include "../test_plugin/test_plugin.hpp"
+
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
 
@@ -45,6 +47,9 @@ sakura::Clock g_editor_clock;
 sakura::ImGuiLayer g_imgui_layer;
 
 static float g_FPS = 0.0f;
+
+static sakura::plugin::PluginRegistry g_editor_plugin_registry;
+static sakura::plugin::PluginHandle g_test_plugin_handle {};
 
 inline void SetupImGuiStyle(bool bStyleDark_, float alpha_)
 {
@@ -150,6 +155,43 @@ inline void SetupImGuiStyle(bool bStyleDark_, float alpha_)
 	}
 }
 
+static void init_plugins(const sakura::App& app)
+{
+	auto desc = test_plugin::create_plugin();
+	g_test_plugin_handle = g_editor_plugin_registry.add_plugin(desc);
+	auto& test_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
+	test_plugin_api.init()(app, g_editor_scene.ecs);
+}
+
+static void cleanup_plugins(const sakura::App& app)
+{
+	auto& test_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
+	test_plugin_api.cleanup()(app, g_editor_scene.ecs);
+}
+
+void fixed_update_plugins(sakura::f32 dt, const sakura::App& app)
+{
+	auto& test_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
+	test_plugin_api.fixed_update()(dt, app, g_editor_scene.ecs);
+}
+
+void update_plugins(sakura::f32 dt, const sakura::App& app)
+{
+	auto& test_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
+	test_plugin_api.update()(dt, app, g_editor_scene.ecs);
+}
+
+void render_plugins(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
+{
+	auto& test_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
+	test_plugin_api.render()(dt, frame_interpolator, app, g_editor_scene.ecs, g_renderer);
+}
+
 void init(const sakura::App& app)
 {
 	// #SK_TODO: Delete when we have a rendering backend!
@@ -230,10 +272,15 @@ void init(const sakura::App& app)
 
 	// Init game
 	sakura::game_lib::init(app, g_editor_scene.ecs);
+
+	// Init plugins
+	init_plugins(app);
 }
 void cleanup(const sakura::App& app)
 {
-	// Clean up game first
+	// First thing clean up plugins
+	cleanup_plugins(app);
+	// Then clean up game
 	sakura::game_lib::cleanup(app, g_editor_scene.ecs);
 
 	g_imgui_layer.cleanup();
@@ -283,7 +330,8 @@ void draw_menubar_ui()
 			};
 
 			std::function<void()> theme_setups[Theme::Count] = {
-				[]() { SetupImGuiStyle(true, 1.0f); }, []() { SetupImGuiStyle(false, 1.0f); },
+				[]() { SetupImGuiStyle(true, 1.0f); },
+				[]() { SetupImGuiStyle(false, 1.0f); },
 			};
 
 			for (int t = 0; t < Theme::Count; t++) {
@@ -386,6 +434,8 @@ void imgui_update(sakura::f32 dt, const sakura::App& app)
 
 void fixed_update(sakura::f32 dt, const sakura::App& app)
 {
+	fixed_update_plugins(dt, app);
+
 	if (g_play_state == PlayState::Playing) {
 		sakura::game_lib::fixed_update(dt, app, g_editor_scene.ecs);
 	} else {
@@ -400,13 +450,19 @@ void fixed_update(sakura::f32 dt, const sakura::App& app)
 void update(sakura::f32 dt, const sakura::App& app)
 {
 	auto editor_dt = g_editor_clock.delta_time_seconds();
+
+	update_plugins(editor_dt, app);
+
 	sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
+
 	g_FPS = 1.0f / editor_dt;
 }
 
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
 	auto render_system = [&app](float delta_time, float interpolator, SDL_Renderer* renderer) {
+		render_plugins(delta_time, interpolator, app);
+
 		// Render game scene
 		SDL_SetRenderTarget(renderer, g_scene_texture);
 		sakura::game_lib::render(delta_time, interpolator, app, g_editor_scene.ecs, renderer);
@@ -428,7 +484,11 @@ void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& a
 	render_system(editor_dt, frame_interpolator, g_renderer);
 }
 
-void end_of_main_loop_update(sakura::f32 dt, const sakura::App& app) { g_editor_clock.update(dt); }
+void end_of_main_loop_update(sakura::f32 dt, const sakura::App& app)
+{
+	g_editor_clock.update(dt);
+	g_editor_plugin_registry.poll_plugins();
+}
 
 void native_message_pump(void* data)
 {
