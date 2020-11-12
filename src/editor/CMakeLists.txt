@@ -57,3 +57,4 @@ endif()
 
 target_link_libraries(sakura_editor sakura)
 target_link_libraries(sakura_editor sakura_game_lib)
+target_link_libraries(sakura_editor test_plugin)

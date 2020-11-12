@@ -47,8 +47,8 @@ namespace sakura::plugin {
 			}
 
 			// Copy the DLL to avoid holding a lock on the original file
-			std::wstring temp_dll_name = L"temp\/\/" + dll_path + L"hcpp.dll";
-			CreateDirectory("temp\/\/plugin\s\/\/", NULL);
+			std::wstring temp_dll_name = L"temp//" + dll_path + L"hcpp.dll";
+			CreateDirectory("temp//plugins//", NULL);
 			if (CopyFileW(dll_path.c_str(), temp_dll_name.c_str(), FALSE)) {
 
 				sakura::logging::log_info("reloading plugin \"%s\"...", plugin_desc.name_);

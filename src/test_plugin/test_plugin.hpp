@@ -15,6 +15,8 @@
 
 namespace test_plugin {
 	using namespace sakura::plugin;
+	TEST_PLUGIN_API bool load(PluginRegistry&, LoadOptions, const PluginHandle&, const Payload&);
+	TEST_PLUGIN_API bool unload(PluginRegistry&, LoadOptions, const PluginHandle&, Payload&);
 	inline PluginDesc create_plugin() {
 		PluginDesc desc;
 		desc.set_api(sakura::plugin::APIs::Game);
@@ -30,6 +32,4 @@ namespace test_plugin {
 
 		return desc;
 	}
-	TEST_PLUGIN_API bool load(PluginRegistry&, LoadOptions, const PluginHandle&, const Payload&);
-	TEST_PLUGIN_API bool unload(PluginRegistry&, LoadOptions, const PluginHandle&, Payload&);
 }

@@ -33,11 +33,17 @@ file(GLOB_RECURSE test_plugin_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 include_directories(${test_plugin_SOURCE_DIR})
 include_directories(${sakura_SOURCE_DIR})
 
+if(PLUGIN_HOTRELOAD)
 add_definitions(-DTEST_PLUGIN_EXPORTS)
 
 add_library(test_plugin SHARED
 	${test_plugin_SRC}
 )
+else()
+add_library(test_plugin
+	${test_plugin_SRC}
+)
+endif()
 
 set_target_properties(test_plugin
   PROPERTIES
