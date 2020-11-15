@@ -1,7 +1,9 @@
 #include "../editor_ui_plugin.hpp"
-#include "../sakura/app.hpp"
-#include "../sakura/log/log.hpp"
-#include "../sakura/type_aliases.hpp"
+
+#include "../../../../sakura/app.hpp"
+#include "../../../../sakura/log/log.hpp"
+#include "../../../../sakura/type_aliases.hpp"
+
 #include "SDL.h"
 
 namespace editor_ui_plugin {
@@ -29,4 +31,4 @@ namespace editor_ui_plugin {
 
 	EDITOR_UI_PLUGIN_API
 	bool unload(PluginRegistry&, LoadOptions, const PluginHandle&, Payload&) { return true; }
-} // namespace test_plugin
+} // namespace editor_ui_plugin

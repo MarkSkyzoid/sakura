@@ -2,7 +2,7 @@
 // #SK_TODO: through an automatic tool!
 
 #pragma once
-#include "../sakura/plugin_system/plugin_system.hpp"
+#include "../../../sakura/plugin_system/plugin_system.hpp"
 
 #if SAKURA_PLUGIN_HOTRELOAD
 #ifdef TEST_PLUGIN_EXPORTS

@@ -23,12 +23,18 @@ function(assign_source_group)
     endforeach()
 endfunction(assign_source_group)
 
-file(GLOB_RECURSE editor_ui_plugin_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+file(GLOB_RECURSE editor_ui_plugin_own_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 	"*.hpp"
 	"*.cpp"
     "private/*.hpp"
     "private/*.cpp"
 )
+
+file(GLOB editor_ui_plugin_SRC
+   ${editor_ui_plugin_own_SRC}
+)
+
+assign_source_group(${editor_ui_plugin_SRC})
 
 include_directories(${editor_ui_plugin_SOURCE_DIR})
 include_directories(${sakura_SOURCE_DIR})

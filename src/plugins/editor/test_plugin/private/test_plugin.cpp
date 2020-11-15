@@ -1,7 +1,7 @@
 #include "../test_plugin.hpp"
-#include "../sakura/app.hpp"
-#include "../sakura/log/log.hpp"
-#include "../sakura/type_aliases.hpp"
+#include "../../../../sakura/app.hpp"
+#include "../../../../sakura/log/log.hpp"
+#include "../../../../sakura/type_aliases.hpp"
 #include "SDL.h"
 
 namespace test_plugin {
