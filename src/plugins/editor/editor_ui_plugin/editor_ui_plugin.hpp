@@ -23,15 +23,15 @@ namespace editor_ui_plugin {
 	inline PluginDesc create_plugin()
 	{
 		PluginDesc desc;
-		desc.set_api(sakura::plugin::APIs::Game);
+		desc.set_api(sakura::plugin::APIs::Editor);
 		desc.set_shared_library_name(EDITOR_UI_PLUGIN_NAME);
 
 #if SAKURA_PLUGIN_HOTRELOAD
 		desc.set_load_callback(nullptr);
 		desc.set_unload_callback(nullptr);
 #else  // SAKURA_PLUGIN_HOTRELOAD
-		desc.set_load_callback(test_plugin::load);
-		desc.set_unload_callback(test_plugin::unload);
+		desc.set_load_callback(editor_ui_plugin::load);
+		desc.set_unload_callback(editor_ui_plugin::unload);
 #endif // SAKURA_PLUGIN_HOTRELOAD
 
 		return desc;

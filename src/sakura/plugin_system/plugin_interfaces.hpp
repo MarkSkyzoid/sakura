@@ -10,24 +10,22 @@ public:                                                                   \
 	inline cb_type cb_name##() { return cb_name##_; }                      \
 	inline void set_##cb_name(cb_type callback) { cb_name##_ = callback; } \
                                                                           \
-private:                                                                  \
 	cb_type cb_name##_ = nullptr;
 
 	enum class APIs
 	{
 		Game = 0,
+		Editor,
 		Count
 	};
 
 	enum class APIGameID
 	{
-		ID = 0
 	};
 
 	class APIGame
 	{
 	public:
-
 		using InitCleanupCallbackType = void (*)(const App& app, sakura::ecs::ECS& ecs_instance);
 		using UpdateCallbackType = void (*)(f32 dt, const App& app, sakura::ecs::ECS& ecs_instance);
 		using RenderCallbackType = void (*)(f32 dt,
@@ -42,6 +40,21 @@ private:                                                                  \
 		MAKE_CALLBACK(update, UpdateCallbackType);
 		MAKE_CALLBACK(render, RenderCallbackType);
 		MAKE_CALLBACK(end_of_main_loop, UpdateCallbackType);
+	};
+
+	class APIEditor
+	{
+	public:
+		using InitCleanupCallbackType = void (*)(const App& app, sakura::ecs::ECS& ecs_instance);
+		using UpdateImguiCallbackType = void (*)(f32 dt, const App& app, sakura::ecs::ECS& ecs_instance, void* imgui_context);
+
+		MAKE_CALLBACK(init, InitCleanupCallbackType);
+		MAKE_CALLBACK(cleanup, InitCleanupCallbackType);
+		MAKE_CALLBACK(update_imgui, UpdateImguiCallbackType);
+	};
+
+	enum class APIEditorID
+	{
 	};
 
 #undef MAKE_CALLBACK

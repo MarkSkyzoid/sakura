@@ -109,6 +109,7 @@ namespace sakura {
 			/// Returns the API interface for the given API type, given a plugin handle.
 			/// </summary>
 			APIGame& query_api(APIGameID api_type, PluginHandle plugin_handle);
+			APIEditor& query_api(APIEditorID api_type, PluginHandle plugin_handle);
 
 			/// <summary>
 			/// Use this function at the end of the frame, for hot reloading plugin that have changed (if hot reload is enabled)
@@ -138,6 +139,7 @@ namespace sakura {
 			};
 
 			PluginArray<APIGame> game_plugins_;
+			PluginArray<APIEditor> editor_plugins_;
 
 			const char* plugins_subfolder_name_ = "";
 		};

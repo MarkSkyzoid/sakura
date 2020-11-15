@@ -38,6 +38,8 @@ assign_source_group(${editor_ui_plugin_SRC})
 
 include_directories(${editor_ui_plugin_SOURCE_DIR})
 include_directories(${sakura_SOURCE_DIR})
+include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
+include_directories(${sakura_SOURCE_DIR}/../ext/IconFontCppHeaders/)
 
 if(PLUGIN_HOTRELOAD)
 add_definitions(-DEDITOR_UI_PLUGIN_EXPORTS)

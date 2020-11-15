@@ -16,7 +16,8 @@ static std::wstring string_to_wstring(const std::string& str)
 	return wstr_to;
 }
 
-static void create_directory_recursive(wchar_t* path) {
+static void create_directory_recursive(wchar_t* path)
+{
 	wchar_t folder[MAX_PATH];
 	wchar_t* end;
 	ZeroMemory(folder, MAX_PATH * sizeof(wchar_t));
@@ -113,6 +114,14 @@ namespace sakura::plugin {
 		u32 plugin_index = 0;
 		for (auto& plugin_entry : game_plugins_.plugins) {
 			PluginHandle handle = { plugin_index, APIs::Game };
+			Payload hot_payload;
+			poll_plugin(plugin_entry.desc, handle);
+			plugin_index++;
+		}
+
+		plugin_index = 0;
+		for (auto& plugin_entry : editor_plugins_.plugins) {
+			PluginHandle handle = { plugin_index, APIs::Editor };
 			Payload hot_payload;
 			poll_plugin(plugin_entry.desc, handle);
 			plugin_index++;

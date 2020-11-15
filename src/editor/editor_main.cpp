@@ -162,36 +162,15 @@ static void init_plugins(const sakura::App& app)
 	auto desc = editor_ui_plugin::create_plugin();
 	g_editor_ui_plugin_handle = g_editor_plugin_registry.add_plugin(desc);
 	auto& editor_ui_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
+	g_editor_plugin_registry.query_api(sakura::plugin::APIEditorID {}, g_editor_ui_plugin_handle);
 	editor_ui_plugin_api.init()(app, g_editor_scene.ecs);
 }
 
 static void cleanup_plugins(const sakura::App& app)
 {
 	auto& editor_ui_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
+	g_editor_plugin_registry.query_api(sakura::plugin::APIEditorID {}, g_editor_ui_plugin_handle);
 	editor_ui_plugin_api.cleanup()(app, g_editor_scene.ecs);
-}
-
-void fixed_update_plugins(sakura::f32 dt, const sakura::App& app)
-{
-	auto& editor_ui_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
-	editor_ui_plugin_api.fixed_update()(dt, app, g_editor_scene.ecs);
-}
-
-void update_plugins(sakura::f32 dt, const sakura::App& app)
-{
-	auto& editor_ui_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
-	editor_ui_plugin_api.update()(dt, app, g_editor_scene.ecs);
-}
-
-void render_plugins(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
-{
-	auto& editor_ui_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
-	editor_ui_plugin_api.render()(dt, frame_interpolator, app, g_editor_scene.ecs, g_renderer);
 }
 
 void init(const sakura::App& app)
@@ -436,8 +415,6 @@ void imgui_update(sakura::f32 dt, const sakura::App& app)
 
 void fixed_update(sakura::f32 dt, const sakura::App& app)
 {
-	fixed_update_plugins(dt, app);
-
 	if (g_play_state == PlayState::Playing) {
 		sakura::game_lib::fixed_update(dt, app, g_editor_scene.ecs);
 	} else {
@@ -446,14 +423,15 @@ void fixed_update(sakura::f32 dt, const sakura::App& app)
 
 	if (!g_imgui_frameblocker.did_update) {
 		imgui_update(dt, app);
+		auto& editor_ui_plugin_api =
+		g_editor_plugin_registry.query_api(sakura::plugin::APIEditorID {}, g_editor_ui_plugin_handle);
+		editor_ui_plugin_api.update_imgui()(dt, app, g_editor_scene.ecs, ImGui::GetCurrentContext());
 	}
 }
 
 void update(sakura::f32 dt, const sakura::App& app)
 {
 	auto editor_dt = g_editor_clock.delta_time_seconds();
-
-	update_plugins(editor_dt, app);
 
 	sakura::game_lib::update(editor_dt, app, g_editor_scene.ecs);
 
@@ -463,8 +441,6 @@ void update(sakura::f32 dt, const sakura::App& app)
 void render(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
 	auto render_system = [&app](float delta_time, float interpolator, SDL_Renderer* renderer) {
-		render_plugins(delta_time, interpolator, app);
-
 		// Render game scene
 		SDL_SetRenderTarget(renderer, g_scene_texture);
 		sakura::game_lib::render(delta_time, interpolator, app, g_editor_scene.ecs, renderer);

@@ -29,6 +29,13 @@ namespace sakura::plugin {
 			remove_plugin(handle);
 			plugin_index++;
 		}
+		
+		plugin_index = 0;
+		for (auto& plugin_entry : editor_plugins_.plugins) {
+			PluginHandle handle { plugin_index, APIs::Editor };
+			remove_plugin(handle);
+			plugin_index++;
+		}
 	}
 
 	PluginHandle PluginRegistry::add_plugin(PluginDesc& plugin_desc)
@@ -41,6 +48,11 @@ namespace sakura::plugin {
 		case APIs::Game: {
 			potential_handle.index = static_cast<u32>(game_plugins_.count);
 			potential_handle.plugin_api = APIs::Game;
+			break;
+		}
+		case APIs::Editor: {
+			potential_handle.index = static_cast<u32>(editor_plugins_.count);
+			potential_handle.plugin_api = APIs::Editor;
 			break;
 		}
 		case APIs::Count: // Intentional
@@ -69,6 +81,11 @@ namespace sakura::plugin {
 			game_plugins_.plugins[game_plugins_.count++].desc = plugin_desc; // store the description
 			break;
 		}
+		case APIs::Editor: {
+			out_handle = potential_handle;
+			editor_plugins_.plugins[editor_plugins_.count++].desc = plugin_desc; // store the description
+			break;
+		}
 		case APIs::Count: // Intentional
 		default: {
 			break;
@@ -91,6 +108,10 @@ namespace sakura::plugin {
 			plugin_desc = game_plugins_.plugins[plugin_handle.index].desc;
 			break;
 		}
+		case APIs::Editor: {
+			plugin_desc = editor_plugins_.plugins[plugin_handle.index].desc;
+			break;
+		}
 		case APIs::Count: // Intentional
 		default: {
 			SKR_ASSERT_M(false, "Plugin API not implemented! It won't be loaded");
@@ -107,10 +128,21 @@ namespace sakura::plugin {
 
 	APIGame& PluginRegistry::query_api(APIGameID api_type, PluginHandle plugin_handle)
 	{
+		SKR_ASSERT(plugin_handle.plugin_api == APIs::Game);
 		SKR_ASSERT_M(plugin_handle.index != InvalidPluginHandle.index &&
 						 plugin_handle.plugin_api != InvalidPluginHandle.plugin_api,
 						 "Invalid plugin handle passed!");
 		return game_plugins_.plugins[plugin_handle.index].api;
+	}
+
+	sakura::plugin::APIEditor& PluginRegistry::query_api(APIEditorID api_type, PluginHandle plugin_handle)
+	{
+		SKR_ASSERT(plugin_handle.plugin_api == APIs::Editor);
+		SKR_ASSERT_M(plugin_handle.index != InvalidPluginHandle.index &&
+						 plugin_handle.plugin_api != InvalidPluginHandle.plugin_api,
+						 "Invalid plugin handle passed!");
+
+		return editor_plugins_.plugins[plugin_handle.index].api;
 	}
 
 	bool PluginRegistry::load_internal(PluginDesc& plugin_desc, PluginHandle handle, LoadOptions options, const Payload& payload)
@@ -126,7 +158,6 @@ namespace sakura::plugin {
 	void PluginRegistry::poll_plugins() {}
 
 	bool PluginRegistry::poll_plugin(PluginDesc&, PluginHandle) { return false; }
-
 
 	void PluginDynamicLibrary::init(const char*) {}
 #endif //! SAKURA_PLUGIN_HOTRELOAD

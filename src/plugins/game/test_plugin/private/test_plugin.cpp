@@ -18,7 +18,7 @@ namespace test_plugin {
 	TEST_PLUGIN_API
 	bool load(PluginRegistry& plugin_registry, LoadOptions load_options, const PluginHandle& plugin_handle, const Payload&)
 	{
-		APIGame& game_api = plugin_registry.query_api(APIGameID::ID, plugin_handle);
+		APIGame& game_api = plugin_registry.query_api(APIGameID {}, plugin_handle);
 		game_api.set_init(test_plugin::init);
 		game_api.set_cleanup(test_plugin::cleanup);
 		game_api.set_fixed_update(test_plugin::fixed_update);

@@ -75,6 +75,7 @@ namespace sakura {
 
 		template<typename... Args> void log_error(const char* fmt, Args... args)
 		{
+			loguru::stacktrace();
 			LOG_F(ERROR, fmt, args...);
 		}
 
@@ -91,6 +92,7 @@ namespace sakura {
 
 		template<typename... Args> void dlog_error(const char* fmt, Args... args)
 		{
+			loguru::stacktrace();
 			DLOG_F(ERROR, fmt, args...);
 		}
 	} // namespace logging

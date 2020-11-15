@@ -4,6 +4,9 @@
 #include "../../../../sakura/log/log.hpp"
 #include "../../../../sakura/type_aliases.hpp"
 
+#include "../../../../ext/imgui/imgui.h"
+#include "../../../../ext/IconFontCppHeaders/IconsFontAwesome5.h"
+
 #include "SDL.h"
 
 namespace editor_ui_plugin {
@@ -12,20 +15,25 @@ namespace editor_ui_plugin {
 
 	static void init(const App& app, sakura::ecs::ECS& ecs_instance) {}
 	static void cleanup(const App& app, sakura::ecs::ECS& ecs_instance) {}
-	static void fixed_update(f32 dt, const App& app, sakura::ecs::ECS& ecs_instance) {}
-	static void update(f32 dt, const App& app, sakura::ecs::ECS& ecs_instance) {}
-	static void render(f32 dt, f32 frame_interpolator, const App& app, sakura::ecs::ECS& ecs_instance, SDL_Renderer* renderer)
-	{}
+	static void update_imgui(f32 dt, const App& app, sakura::ecs::ECS& ecs_instance, void* imgui_context)
+	{
+		ImGui::SetCurrentContext((ImGuiContext*)imgui_context);
+
+		static bool b_editor_plugin_window_open = true;
+		if (ImGui::Begin(ICON_FA_PLUG "Plugin Window###PluginWindow", &b_editor_plugin_window_open)) {
+			ImGui::Text("This is a window that can be hot reloaded");
+			ImGui::Text("This is a window that HAS BEEN HOT RELOADED");
+			ImGui::End();
+		}
+	}
 
 	EDITOR_UI_PLUGIN_API
 	bool load(PluginRegistry& plugin_registry, LoadOptions load_options, const PluginHandle& plugin_handle, const Payload&)
 	{
-		APIGame& game_api = plugin_registry.query_api(APIGameID::ID, plugin_handle);
-		game_api.set_init(editor_ui_plugin::init);
-		game_api.set_cleanup(editor_ui_plugin::cleanup);
-		game_api.set_fixed_update(editor_ui_plugin::fixed_update);
-		game_api.set_update(editor_ui_plugin::update);
-		game_api.set_render(editor_ui_plugin::render);
+		APIEditor& editor_api = plugin_registry.query_api(APIEditorID {}, plugin_handle);
+		editor_api.set_init(editor_ui_plugin::init);
+		editor_api.set_cleanup(editor_ui_plugin::cleanup);
+		editor_api.set_update_imgui(editor_ui_plugin::update_imgui);
 		return true;
 	}
 
