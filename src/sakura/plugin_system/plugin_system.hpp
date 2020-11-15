@@ -16,7 +16,7 @@ namespace sakura {
 		constexpr size_t MAX_PLUGINS_PER_TYPE = 32;
 		constexpr const char* LOAD_CALLBACK_NAME = "load";
 		constexpr const char* UNLOAD_CALLBACK_NAME = "unload";
-		constexpr const char* PLUGINS_FOLDER = "plugins";
+		constexpr const char* PLUGINS_FOLDER = "bin//plugins";
 
 		struct Payload;
 		class PluginDesc;

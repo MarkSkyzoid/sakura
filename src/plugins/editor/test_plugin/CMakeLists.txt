@@ -1,12 +1,14 @@
-# Macros
+project(test_plugin)
+
 macro(add_post_build_steps libraryPath)
     if (WIN32 AND CMAKE_SYSTEM_VERSION)
-     add_custom_command(TARGET sakura_editor POST_BUILD
+     add_custom_command(TARGET test_plugin POST_BUILD
      COMMAND ${CMAKE_COMMAND} -E copy_if_different
          ${libraryPath}/SDL2.dll
-         $<TARGET_FILE_DIR:sakura_editor>/SDL2.dll)
+         $<TARGET_FILE_DIR:test_plugin>/SDL2.dll)
     endif()
 endmacro()
+
 
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
@@ -21,28 +23,35 @@ function(assign_source_group)
     endforeach()
 endfunction(assign_source_group)
 
-project(sakura_editor)
-
-file(GLOB_RECURSE sakura_editor_own_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+file(GLOB_RECURSE test_plugin_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 	"*.hpp"
 	"*.cpp"
     "private/*.hpp"
     "private/*.cpp"
 )
 
-file(GLOB sakura_editor_SRC
-   ${sakura_editor_own_SRC}
-)
-
-add_executable(sakura_editor
-	${sakura_editor_SRC}
-)
-
-assign_source_group(${sakura_editor_SRC})
-
+include_directories(${test_plugin_SOURCE_DIR})
 include_directories(${sakura_SOURCE_DIR})
-include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
-include_directories(${sakura_SOURCE_DIR}/../ext/IconFontCppHeaders/)
+
+if(PLUGIN_HOTRELOAD)
+add_definitions(-DTEST_PLUGIN_EXPORTS)
+
+add_library(test_plugin SHARED
+	${test_plugin_SRC}
+)
+else()
+add_library(test_plugin
+	${test_plugin_SRC}
+)
+endif()
+
+set_target_properties(test_plugin
+  PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${SAKURA_BIN_DIR}/plugins/editor/"
+  RUNTIME_OUTPUT_DIRECTORY_RELEASE "${SAKURA_BIN_DIR}/plugins/editor/"
+)
+
+assign_source_group(${sakura_game_lib_SRC})
 
 # Link and create SDL2 Definition if we're using SDL2
 if (SDL2_ENABLED)
@@ -55,6 +64,5 @@ if (SDL2_ENABLED)
 	endif()
 endif()
 
-target_link_libraries(sakura_editor sakura)
-target_link_libraries(sakura_editor sakura_game_lib)
-target_link_libraries(sakura_editor editor_ui_plugin)
+
+target_link_libraries(test_plugin sakura)

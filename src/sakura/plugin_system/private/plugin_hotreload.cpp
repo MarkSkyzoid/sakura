@@ -16,6 +16,26 @@ static std::wstring string_to_wstring(const std::string& str)
 	return wstr_to;
 }
 
+static void create_directory_recursive(wchar_t* path) {
+	wchar_t folder[MAX_PATH];
+	wchar_t* end;
+	ZeroMemory(folder, MAX_PATH * sizeof(wchar_t));
+
+	end = wcschr(path, L'/');
+
+	while (end != NULL) {
+		wcsncpy_s(folder, MAX_PATH, path, end - path + 1);
+		if (!CreateDirectoryW(folder, NULL)) {
+			DWORD err = GetLastError();
+
+			if (err != ERROR_ALREADY_EXISTS) {
+				// do whatever handling you'd like
+			}
+		}
+		end = wcschr(++end, L'/');
+	}
+}
+
 namespace sakura::plugin {
 	constexpr const char* PLUGINS_EXT = "dll";
 
@@ -59,9 +79,7 @@ namespace sakura::plugin {
 												  string_to_wstring(plugins_subfolder_name()) + L"//";
 			std::wstring temp_dll_name = L"temp//" + dll_path + L"hcpp.dll";
 			// We need to manually create the temporary folders one by one on windows.
-			CreateDirectoryW(L"temp//", NULL);
-			CreateDirectoryW(L"temp//plugins//", NULL);
-			CreateDirectoryW(temp_dll_path.c_str(), NULL);
+			create_directory_recursive(temp_dll_path.data());
 
 			if (CopyFileW(dll_path.c_str(), temp_dll_name.c_str(), FALSE)) {
 				sakura::logging::log_info("reloading plugin \"%s\"...", plugin_desc.name_);

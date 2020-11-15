@@ -22,7 +22,7 @@
 #include "scene/scene.hpp"
 #include <functional>
 
-#include "../plugins/editor/test_plugin/test_plugin.hpp"
+#include "../plugins/editor/editor_ui_plugin/editor_ui_plugin.hpp"
 
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
@@ -49,7 +49,7 @@ sakura::ImGuiLayer g_imgui_layer;
 static float g_FPS = 0.0f;
 
 static sakura::plugin::PluginRegistry g_editor_plugin_registry;
-static sakura::plugin::PluginHandle g_test_plugin_handle {};
+static sakura::plugin::PluginHandle g_editor_ui_plugin_handle {};
 
 inline void SetupImGuiStyle(bool bStyleDark_, float alpha_)
 {
@@ -159,39 +159,39 @@ static void init_plugins(const sakura::App& app)
 {
 	g_editor_plugin_registry.set_plugins_subfolder_name("editor");
 
-	auto desc = test_plugin::create_plugin();
-	g_test_plugin_handle = g_editor_plugin_registry.add_plugin(desc);
-	auto& test_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
-	test_plugin_api.init()(app, g_editor_scene.ecs);
+	auto desc = editor_ui_plugin::create_plugin();
+	g_editor_ui_plugin_handle = g_editor_plugin_registry.add_plugin(desc);
+	auto& editor_ui_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
+	editor_ui_plugin_api.init()(app, g_editor_scene.ecs);
 }
 
 static void cleanup_plugins(const sakura::App& app)
 {
-	auto& test_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
-	test_plugin_api.cleanup()(app, g_editor_scene.ecs);
+	auto& editor_ui_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
+	editor_ui_plugin_api.cleanup()(app, g_editor_scene.ecs);
 }
 
 void fixed_update_plugins(sakura::f32 dt, const sakura::App& app)
 {
-	auto& test_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
-	test_plugin_api.fixed_update()(dt, app, g_editor_scene.ecs);
+	auto& editor_ui_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
+	editor_ui_plugin_api.fixed_update()(dt, app, g_editor_scene.ecs);
 }
 
 void update_plugins(sakura::f32 dt, const sakura::App& app)
 {
-	auto& test_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
-	test_plugin_api.update()(dt, app, g_editor_scene.ecs);
+	auto& editor_ui_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
+	editor_ui_plugin_api.update()(dt, app, g_editor_scene.ecs);
 }
 
 void render_plugins(sakura::f32 dt, sakura::f32 frame_interpolator, const sakura::App& app)
 {
-	auto& test_plugin_api =
-	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_test_plugin_handle);
-	test_plugin_api.render()(dt, frame_interpolator, app, g_editor_scene.ecs, g_renderer);
+	auto& editor_ui_plugin_api =
+	g_editor_plugin_registry.query_api(sakura::plugin::APIGameID::ID, g_editor_ui_plugin_handle);
+	editor_ui_plugin_api.render()(dt, frame_interpolator, app, g_editor_scene.ecs, g_renderer);
 }
 
 void init(const sakura::App& app)
