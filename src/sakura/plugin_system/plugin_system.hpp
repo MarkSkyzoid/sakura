@@ -42,7 +42,8 @@ namespace sakura {
 
 		private:
 #if SAKURA_PLUGIN_HOTRELOAD
-			std::wstring library_path_;
+			static const size_t FILENAME_LENGTH = 64; 
+			char library_filename_[FILENAME_LENGTH];
 			ModuleType dynamic_library;
 			u64 last_write_ = 0;
 #endif // SAKURA_PLUGIN_HOTRELOAD
@@ -92,6 +93,15 @@ namespace sakura {
 
 			void cleanup();
 
+			inline void set_plugins_subfolder_name(const char* plugins_subfolder_name)
+			{
+				plugins_subfolder_name_ = plugins_subfolder_name;
+			}
+			[[nodiscard]] inline const char* plugins_subfolder_name() const
+			{
+				return plugins_subfolder_name_;
+			}
+
 			PluginHandle add_plugin(PluginDesc& plugin_desc);
 			void remove_plugin(const PluginHandle& plugin);
 
@@ -110,6 +120,12 @@ namespace sakura {
 			bool unload_internal(PluginDesc& plugin_desc, PluginHandle handle, LoadOptions options, Payload& payload);
 			bool poll_plugin(PluginDesc& plugin_desc, PluginHandle plugin_hand);
 
+#if SAKURA_PLUGIN_HOTRELOAD
+			void get_plugin_library_file_path(const PluginDynamicLibrary& dynamic_lib,
+														 char* out_path,
+														 size_t num_chars_in_out_path) const;
+#endif // SAKURA_PLUGIN_HOTRELOAD
+
 			template<typename T> struct PluginArray
 			{
 				struct Entry
@@ -122,6 +138,8 @@ namespace sakura {
 			};
 
 			PluginArray<APIGame> game_plugins_;
+
+			const char* plugins_subfolder_name_ = "";
 		};
 	} // namespace plugin
 } // namespace sakura

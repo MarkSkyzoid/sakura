@@ -127,6 +127,7 @@ namespace sakura::plugin {
 
 	bool PluginRegistry::poll_plugin(PluginDesc&, PluginHandle) { return false; }
 
+
 	void PluginDynamicLibrary::init(const char*) {}
 #endif //! SAKURA_PLUGIN_HOTRELOAD
 } // namespace sakura::plugin

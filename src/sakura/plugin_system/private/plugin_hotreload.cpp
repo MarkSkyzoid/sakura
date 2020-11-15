@@ -21,14 +21,22 @@ namespace sakura::plugin {
 
 	void PluginDynamicLibrary::init(const char* plugin_name)
 	{
-		char path_buffer[256];
-		sprintf_s(path_buffer, "%s//%s.%s", PLUGINS_FOLDER, plugin_name, PLUGINS_EXT);
-		library_path_ = string_to_wstring(path_buffer);
+		sprintf_s(library_filename_, FILENAME_LENGTH, "%s.%s", plugin_name, PLUGINS_EXT);
+	}
+
+	void PluginRegistry::get_plugin_library_file_path(const PluginDynamicLibrary& dynamic_lib,
+																	  char* out_path,
+																	  size_t num_chars_in_out_path) const
+	{
+		sprintf_s(out_path, num_chars_in_out_path, "%s//%s//%s", PLUGINS_FOLDER,
+					 plugins_subfolder_name(), dynamic_lib.library_filename_);
 	}
 
 	bool PluginRegistry::poll_plugin(PluginDesc& plugin_desc, PluginHandle plugin_handle)
 	{
-		std::wstring dll_path = plugin_desc.dynamic_library_.library_path_;
+		char dll_path_buffer[256];
+		get_plugin_library_file_path(plugin_desc.dynamic_library_, dll_path_buffer, 256);
+		std::wstring dll_path = string_to_wstring(dll_path_buffer);
 		bool result = false;
 		HANDLE dll_file = CreateFileW(dll_path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
 												NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -46,11 +54,16 @@ namespace sakura::plugin {
 				mod.dynamic_library = NULL;
 			}
 
-			// Copy the DLL to avoid holding a lock on the original file
+			// Copy the DLL to a temportary folder in order toavoid holding a lock on the original file
+			std::wstring temp_dll_path = L"temp//" + string_to_wstring(PLUGINS_FOLDER) + L"//" +
+												  string_to_wstring(plugins_subfolder_name()) + L"//";
 			std::wstring temp_dll_name = L"temp//" + dll_path + L"hcpp.dll";
-			CreateDirectory("temp//plugins//", NULL);
-			if (CopyFileW(dll_path.c_str(), temp_dll_name.c_str(), FALSE)) {
+			// We need to manually create the temporary folders one by one on windows.
+			CreateDirectoryW(L"temp//", NULL);
+			CreateDirectoryW(L"temp//plugins//", NULL);
+			CreateDirectoryW(temp_dll_path.c_str(), NULL);
 
+			if (CopyFileW(dll_path.c_str(), temp_dll_name.c_str(), FALSE)) {
 				sakura::logging::log_info("reloading plugin \"%s\"...", plugin_desc.name_);
 
 				mod.dynamic_library = LoadLibraryW(temp_dll_name.c_str());

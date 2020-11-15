@@ -32,7 +32,7 @@ add_subdirectory(src/sakura)
 add_subdirectory(src/editor)
 add_subdirectory(src/launcher)
 add_subdirectory(src/game_lib)
-add_subdirectory(src/test_plugin)
+add_subdirectory(src/plugins)
 
 set_property(TARGET sakura_editor PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set_property(TARGET sakura_launcher PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

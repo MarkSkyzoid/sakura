@@ -22,7 +22,7 @@
 #include "scene/scene.hpp"
 #include <functional>
 
-#include "../test_plugin/test_plugin.hpp"
+#include "../plugins/editor/test_plugin/test_plugin.hpp"
 
 constexpr sakura::i32 WIDTH = 1024;
 constexpr sakura::i32 HEIGHT = 768;
@@ -157,6 +157,8 @@ inline void SetupImGuiStyle(bool bStyleDark_, float alpha_)
 
 static void init_plugins(const sakura::App& app)
 {
+	g_editor_plugin_registry.set_plugins_subfolder_name("editor");
+
 	auto desc = test_plugin::create_plugin();
 	g_test_plugin_handle = g_editor_plugin_registry.add_plugin(desc);
 	auto& test_plugin_api =
