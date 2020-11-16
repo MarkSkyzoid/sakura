@@ -22,7 +22,7 @@ namespace editor_ui_plugin {
 		static bool b_editor_plugin_window_open = true;
 		if (ImGui::Begin(ICON_FA_PLUG "Plugin Window###PluginWindow", &b_editor_plugin_window_open)) {
 			ImGui::Text("This is a window that can be hot reloaded");
-			ImGui::Text("This is a window that HAS BEEN HOT RELOADED");
+			//ImGui::Text("This is a window that HAS BEEN HOT RELOADED");
 			ImGui::End();
 		}
 	}

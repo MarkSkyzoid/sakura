@@ -70,6 +70,10 @@ namespace sakura::plugin {
 
 		u64 last_write_time = 0;
 		if (GetFileTime(dll_file, NULL, NULL, (FILETIME*)&last_write_time) && mod.last_write_ < last_write_time) {
+			sakura::logging::log_info("reloading plugin \"%s\"...", plugin_desc.name_);
+			Payload reload_payload {};
+			unload_internal(plugin_desc, plugin_handle, LoadOptions::UnloadForHotReload, reload_payload);
+
 			if (mod.dynamic_library) {
 				FreeLibrary((HMODULE)mod.dynamic_library);
 				mod.dynamic_library = NULL;
@@ -83,13 +87,9 @@ namespace sakura::plugin {
 			create_directory_recursive(temp_dll_path.data());
 
 			if (CopyFileW(dll_path.c_str(), temp_dll_name.c_str(), FALSE)) {
-				sakura::logging::log_info("reloading plugin \"%s\"...", plugin_desc.name_);
 
 				mod.dynamic_library = LoadLibraryW(temp_dll_name.c_str());
 				if (mod.dynamic_library) {
-					Payload reload_payload {};
-					unload_internal(plugin_desc, plugin_handle, LoadOptions::UnloadForHotReload, reload_payload);
-
 					plugin_desc.set_load_callback(
 					(LoadCallbackType)GetProcAddress((HMODULE)mod.dynamic_library, LOAD_CALLBACK_NAME));
 					plugin_desc.set_unload_callback(
@@ -101,8 +101,8 @@ namespace sakura::plugin {
 
 					result = plugin_desc.load_callback_ && plugin_desc.unload_callback_;
 				}
-				sakura::logging::log_info("result: %s", result ? "SUCCESS" : "FAILURE");
 			}
+			sakura::logging::log_info("result: %s", result ? "SUCCESS" : "FAILURE");
 		}
 
 		CloseHandle(dll_file);
