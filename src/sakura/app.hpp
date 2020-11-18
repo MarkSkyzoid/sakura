@@ -37,8 +37,6 @@ namespace sakura {
 		NativeMessagePumpCallback native_message_pump_callback = nullptr;
 	};
 
-	class IPlatform;
-
 	class App
 	{
 	public:
