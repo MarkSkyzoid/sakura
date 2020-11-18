@@ -17,3 +17,6 @@
 [submodule "src/ext/imgui_software_renderer"]
 	path = src/ext/imgui_software_renderer
 	url = https://github.com/emilk/imgui_software_renderer.git
+[submodule "src/ext/rapidjson"]
+	path = src/ext/rapidjson
+	url = https://github.com/Tencent/rapidjson.git

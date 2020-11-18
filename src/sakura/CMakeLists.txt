@@ -23,6 +23,7 @@ file(GLOB sakura_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 	
 	${sakura_own_SRC}
 
+	# IMGUI
 	"${sakura_SOURCE_DIR}/../ext/imgui/*.h"
 	"${sakura_SOURCE_DIR}/../ext/imgui/*.cpp"
 
@@ -39,6 +40,7 @@ include_directories(${sakura_SOURCE_DIR})
 include_directories(${sakura_SOURCE_DIR}/../ext/lecs)
 include_directories(${sakura_SOURCE_DIR}/../ext/imgui/)
 include_directories(${sakura_SOURCE_DIR}/../ext/IconFontCppHeaders/)
+include_directories(${sakura_SOURCE_DIR}/../ext/rapidjson/)
 
 add_library(sakura
 	${sakura_SRC}
