@@ -23,15 +23,13 @@ namespace sakura::plugin {
 
 	void PluginRegistry::cleanup()
 	{
-		u32 plugin_index = 0;
-		for (auto& plugin_entry : game_plugins_.plugins) {
+		for (u32 plugin_index = 0; plugin_index < game_plugins_.count; plugin_index++) {
 			PluginHandle handle { plugin_index, APIs::Game };
 			remove_plugin(handle);
 			plugin_index++;
 		}
-		
-		plugin_index = 0;
-		for (auto& plugin_entry : editor_plugins_.plugins) {
+
+		for (u32 plugin_index = 0; plugin_index < editor_plugins_.count; plugin_index++) {
 			PluginHandle handle { plugin_index, APIs::Editor };
 			remove_plugin(handle);
 			plugin_index++;

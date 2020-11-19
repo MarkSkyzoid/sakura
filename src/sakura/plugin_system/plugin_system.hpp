@@ -42,7 +42,7 @@ namespace sakura {
 
 		private:
 #if SAKURA_PLUGIN_HOTRELOAD
-			static const size_t FILENAME_LENGTH = 64; 
+			static const size_t FILENAME_LENGTH = 64;
 			char library_filename_[FILENAME_LENGTH];
 			ModuleType dynamic_library;
 			u64 last_write_ = 0;
@@ -91,8 +91,6 @@ namespace sakura {
 		public:
 			~PluginRegistry() { cleanup(); }
 
-			void cleanup();
-
 			inline void set_plugins_subfolder_name(const char* plugins_subfolder_name)
 			{
 				plugins_subfolder_name_ = plugins_subfolder_name;
@@ -117,6 +115,8 @@ namespace sakura {
 			void poll_plugins();
 
 		private:
+			void cleanup();
+
 			bool load_internal(PluginDesc& plugin_desc, PluginHandle handle, LoadOptions options, const Payload& payload);
 			bool unload_internal(PluginDesc& plugin_desc, PluginHandle handle, LoadOptions options, Payload& payload);
 			bool poll_plugin(PluginDesc& plugin_desc, PluginHandle plugin_hand);
